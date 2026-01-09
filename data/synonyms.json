@@ -1,0 +1,20 @@
+// data/synonyms.json
+{
+  "doccia": ["box doccia", "cabina doccia"],
+  "box": ["doccia"],
+  "calcare": ["incrostazioni", "depositi"],
+  "forno": ["teglia", "griglia"],
+  "incrostato": ["incrostazioni", "bruciato", "unto"],
+  "unto": ["grasso", "oleoso"],
+  "lavatrice": ["oblò", "guarnizione", "cestello"],
+  "odore": ["puzza", "cattivo odore"],
+  "muffa": ["nero", "macchie nere", "fungo"],
+  "parquet": ["legno", "pavimento legno"],
+  "divano": ["sofa", "couch"],
+  "tessuto": ["stoffa"],
+  "tappeto": ["moquette"],
+  "vetri": ["finestra", "specchio"],
+  "aloni": ["strisce", "segni"],
+  "ruggine": ["ossido"],
+  "bruciato": ["carbonizzato", "nero"]
+}
