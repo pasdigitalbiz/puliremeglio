@@ -1,0 +1,199 @@
+// data/entries.json
+[
+  {
+    "id": "box_doccia_calcare",
+    "title": "Calcare nel box doccia",
+    "surface": "Box doccia",
+    "problem": "Calcare",
+    "summary": "Rimuovi incrostazioni e aloni senza graffiare. Procedura sicura per vetro e profili.",
+    "difficulty": "Facile",
+    "time": "15 25 min",
+    "risk": "Basso",
+    "tags": ["bagno", "vetro", "rubinetteria", "aloni"],
+    "keywords": ["box doccia calcare", "calcare vetro doccia", "aloni doccia"],
+    "what_you_need": [
+      "Panno in microfibra",
+      "Spugna morbida non abrasiva",
+      "Acido citrico oppure aceto bianco",
+      "Spruzzino",
+      "Acqua tiepida"
+    ],
+    "steps": [
+      "Ventila il bagno e indossa guanti se hai pelle sensibile",
+      "Risciacqua il box con acqua tiepida per ammorbidire i depositi",
+      "Prepara soluzione: acido citrico 150 g in 1 litro d’acqua, oppure aceto diluito metà e metà con acqua",
+      "Spruzza sulle zone con calcare e lascia agire 8 10 minuti",
+      "Passa la spugna morbida con movimenti leggeri, senza premere",
+      "Risciacqua bene, poi asciuga subito con microfibra per evitare nuovi aloni",
+      "Per prevenzione: dopo ogni doccia, fai una passata veloce con microfibra"
+    ],
+    "mistakes": [
+      "Non usare pagliette abrasive o lato verde della spugna sul vetro",
+      "Non lasciare aceto o acido citrico sui profili in alluminio troppo a lungo",
+      "Non pulire e lasciare asciugare all’aria: gli aloni tornano subito"
+    ],
+    "when_not_to_do": [
+      "Se hai pietra naturale vicina al box, evita schizzi di acido: può rovinare marmo e travertino",
+      "Se il box ha trattamento anticalcare, prova prima in un angolo per verificare compatibilità"
+    ],
+    "quick_alternative": "In emergenza, usa un panno microfibra umido con una goccia di detersivo piatti, risciacqua e asciuga subito.",
+    "notes": "Se il calcare è molto vecchio, ripeti il ciclo una seconda volta invece di aumentare aggressività o abrasione.",
+    "boost": 5
+  },
+  {
+    "id": "forno_incrostato",
+    "title": "Forno molto incrostato",
+    "surface": "Forno",
+    "problem": "Incrostazioni e grasso bruciato",
+    "summary": "Ammorbidisci e rimuovi sporco bruciato senza intossicarti e senza graffiare lo smalto interno.",
+    "difficulty": "Media",
+    "time": "40 90 min",
+    "risk": "Medio",
+    "tags": ["cucina", "grasso", "incrostazioni", "teglie"],
+    "keywords": ["pulire forno incrostato", "grasso bruciato forno", "come sgrassare forno"],
+    "what_you_need": [
+      "Guanti",
+      "Spugna morbida e panno microfibra",
+      "Bicarbonato",
+      "Detersivo piatti",
+      "Spruzzino con acqua"
+    ],
+    "steps": [
+      "Spegni e lascia raffreddare completamente. Rimuovi griglie e teglie",
+      "Prepara una pasta: 4 cucchiai di bicarbonato, 1 cucchiaio di detersivo piatti, acqua quanto basta per consistenza cremosa",
+      "Stendi la pasta sulle pareti interne evitando resistenze e ventola, se presenti",
+      "Lascia agire 25 45 minuti. Se lo sporco è pesante, arriva a 60 minuti",
+      "Rimuovi la pasta con spugna morbida e acqua tiepida, risciacquando spesso",
+      "Asciuga con microfibra. Se resta odore, tieni lo sportello aperto 20 minuti",
+      "Per griglie e teglie: ammollo in acqua calda e detersivo piatti 20 minuti, poi spugna non abrasiva"
+    ],
+    "mistakes": [
+      "Non usare lame o raschietti su smalti delicati: rischi micrograffi che trattengono lo sporco",
+      "Non bagnare eccessivamente parti elettriche o resistenze",
+      "Non mischiare prodotti diversi, soprattutto candeggina e acidi"
+    ],
+    "when_not_to_do": [
+      "Se il forno è in funzione o ancora caldo, rimanda: aumenti vapori e rischi ustioni",
+      "Se hai un forno con rivestimento speciale, verifica manuale prima di usare bicarbonato in quantità"
+    ],
+    "quick_alternative": "Per una pulizia veloce, passa interno con panno umido e una goccia di detersivo piatti, poi asciuga. Non risolve incrostazioni pesanti.",
+    "notes": "La costanza fa la differenza: una passata rapida dopo cotture grasse riduce drasticamente incrostazioni future.",
+    "boost": 6
+  },
+  {
+    "id": "odore_lavatrice_guarnizione",
+    "title": "Cattivo odore in lavatrice e guarnizione sporca",
+    "surface": "Lavatrice",
+    "problem": "Odori e residui",
+    "summary": "Elimina biofilm e muffetta da guarnizione e cassetto, migliorando odore e resa del lavaggio.",
+    "difficulty": "Facile",
+    "time": "20 35 min",
+    "risk": "Basso",
+    "tags": ["lavanderia", "muffa", "odore", "guarnizione"],
+    "keywords": ["odore lavatrice", "pulire guarnizione lavatrice", "puzza lavatrice"],
+    "what_you_need": [
+      "Guanti",
+      "Panni microfibra",
+      "Spazzolino vecchio",
+      "Aceto bianco oppure percarbonato",
+      "Detersivo piatti"
+    ],
+    "steps": [
+      "Apri oblò e controlla pieghe della guarnizione. Rimuovi residui solidi",
+      "Pulisci guarnizione con panno umido e una goccia di detersivo piatti",
+      "Per zone nere leggere: panno con aceto diluito, poi risciacqua e asciuga",
+      "Estrai cassetto detersivo, lavalo con acqua calda e spazzolino",
+      "Pulisci vano del cassetto con panno umido, asciuga bene",
+      "Esegui un lavaggio a vuoto ad alta temperatura con percarbonato, seguendo dosi in etichetta",
+      "A fine ciclo lascia oblò e cassetto socchiusi per far asciugare"
+    ],
+    "mistakes": [
+      "Non chiudere subito oblò e cassetto: l’umidità alimenta odori",
+      "Non esagerare con detersivo e ammorbidente: favoriscono residui",
+      "Non usare acidi su parti metalliche delicate senza risciacquo immediato"
+    ],
+    "when_not_to_do": [
+      "Se hai muffa estesa e persistente, valuta intervento professionale o assistenza: potrebbe esserci ristagno interno",
+      "Se noti perdite o odore di bruciato, non procedere e contatta assistenza"
+    ],
+    "quick_alternative": "Asciuga guarnizione e lascia oblò aperto ogni volta. È la prevenzione più efficace.",
+    "notes": "Il cattivo odore è spesso biofilm invisibile. La combinazione asciugatura più ciclo caldo periodico è la soluzione più stabile."
+  },
+  {
+    "id": "tappeto_macchia_vino",
+    "title": "Macchia di vino sul tappeto",
+    "surface": "Tappeto",
+    "problem": "Macchia organica",
+    "summary": "Blocca la macchia subito, assorbi e tratta senza allargare l’alone.",
+    "difficulty": "Facile",
+    "time": "10 25 min",
+    "risk": "Medio",
+    "tags": ["tessuti", "macchie", "aloni"],
+    "keywords": ["macchia vino tappeto", "togliere vino tappeto", "aloni tappeto"],
+    "what_you_need": [
+      "Carta assorbente o panno pulito",
+      "Acqua fredda",
+      "Detersivo piatti",
+      "Aceto bianco opzionale",
+      "Spugna morbida"
+    ],
+    "steps": [
+      "Tampona subito con carta o panno, senza strofinare",
+      "Versa poca acqua fredda sul punto e tampona di nuovo. Ripeti finché il panno assorbe meno colore",
+      "Prepara soluzione: 1 bicchiere d’acqua fredda con 3 gocce di detersivo piatti",
+      "Applica con spugna tamponando dall’esterno verso il centro",
+      "Risciacqua tamponando con panno bagnato solo acqua",
+      "Asciuga con panno asciutto e lascia aria circolare. Non usare calore diretto",
+      "Se resta alone, ripeti soluzione e risciacquo invece di aumentare forza"
+    ],
+    "mistakes": [
+      "Non strofinare: spingi pigmento nelle fibre e allarghi la macchia",
+      "Non usare acqua calda: può fissare la macchia",
+      "Non saturare il tappeto: l’umidità profonda crea aloni più grandi"
+    ],
+    "when_not_to_do": [
+      "Se tappeto in lana o seta, prova prima in un angolo e valuta detergenti specifici",
+      "Se la macchia è vecchia e il tappeto pregiato, meglio un lavaggio professionale"
+    ],
+    "quick_alternative": "Se sei fuori casa, tampona il più possibile e lascia asciugare. Il primo obiettivo è non farla espandere.",
+    "notes": "La riuscita dipende dall’immediatezza. I primi 5 minuti sono decisivi."
+  },
+  {
+    "id": "parquet_opaco_aloni",
+    "title": "Parquet opaco e con aloni",
+    "surface": "Parquet",
+    "problem": "Opacità e aloni",
+    "summary": "Ripristina un aspetto uniforme evitando acqua eccessiva e prodotti aggressivi.",
+    "difficulty": "Media",
+    "time": "20 40 min",
+    "risk": "Medio",
+    "tags": ["pavimenti", "legno", "aloni", "opaco"],
+    "keywords": ["parquet opaco", "aloni parquet", "pulire parquet senza rovinarlo"],
+    "what_you_need": [
+      "Aspirapolvere con spazzola morbida",
+      "Panno in microfibra",
+      "Detergente neutro per parquet o sapone neutro molto diluito",
+      "Secchio con acqua tiepida",
+      "Panno asciutto"
+    ],
+    "steps": [
+      "Rimuovi polvere con aspirapolvere e spazzola morbida. La polvere fa micrograffi",
+      "Prepara acqua tiepida con detergente neutro, dosaggio minimo",
+      "Strizza molto il panno. Deve essere umido, non bagnato",
+      "Passa per piccole zone, seguendo le venature",
+      "Asciuga subito con panno asciutto per eliminare aloni",
+      "Se l’alone è da residui di prodotto, fai un passaggio solo acqua ben strizzata e asciuga subito"
+    ],
+    "mistakes": [
+      "Non usare vapore: l’umidità entra nel legno e può gonfiare le doghe",
+      "Non usare aceto o ammoniaca su finiture delicate",
+      "Non lasciare acqua ferma: crea macchie e opacità"
+    ],
+    "when_not_to_do": [
+      "Se vedi rigonfiamenti o fessure, evita acqua e contatta un parquetista",
+      "Se il parquet è a olio o cera, usa solo prodotti compatibili con quel trattamento"
+    ],
+    "quick_alternative": "Per aloni leggeri, microfibra appena umida e asciugatura immediata. La differenza la fa l’asciugatura.",
+    "notes": "Molti aloni vengono da troppo detergente o panno poco strizzato. Meno prodotto, più controllo."
+  }
+]
