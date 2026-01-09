@@ -1,85 +1,41 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pulire Meglio | Consigli pratici per pulire qualsiasi cosa</title>
-  <meta name="description" content="Cerca cosa devi pulire e ottieni una procedura passo passo, errori da evitare e alternative rapide." />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%230f172a' d='M32 6c9 0 16 7 16 16s-7 16-16 16S16 31 16 22 23 6 32 6z'/%3E%3Cpath fill='%2322c55e' d='M12 40c8 8 32 8 40 0v10c0 4-3 8-8 8H20c-5 0-8-4-8-8V40z'/%3E%3C/svg%3E" />
+  <title>Pulire Meglio</title>
 </head>
-<body>
-  <header class="header">
-    <div class="container headerRow">
-      <a class="brand" href="#/">
-        <span class="brandMark" aria-hidden="true"></span>
-        <span class="brandText">Pulire Meglio</span>
-      </a>
-      <nav class="nav">
-        <a href="#/categorie">Categorie</a>
-        <a href="#/come-funziona">Come funziona</a>
-        <a href="#/contribuisci">Contribuisci</a>
-      </nav>
+<body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; max-width: 900px; margin: 30px auto; padding: 0 16px;">
+  <h1>Pulire Meglio</h1>
+  <p>Descrivi cosa devi pulire o carica una foto. Premi “Genera risposta”.</p>
+
+  <label for="q" style="display:block; font-weight:600; margin: 12px 0 6px;">Descrizione</label>
+  <textarea id="q" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:10px;"
+    placeholder="Esempio: forno incrostato, calcare nel box doccia, macchia di vino sul tappeto"></textarea>
+
+  <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-top: 12px;">
+    <div style="flex: 1; min-width: 260px;">
+      <label for="img" style="display:block; font-weight:600; margin: 12px 0 6px;">Foto (opzionale)</label>
+      <input id="img" type="file" accept="image/*" />
+      <div id="imgMeta" style="margin-top:6px; color:#666; font-size: 14px;"></div>
     </div>
-  </header>
 
-  <main class="container">
-    <section class="hero" id="viewHome">
-      <h1>Dimmi cosa devi pulire</h1>
-      <p class="sub">Scrivi il tuo problema. Ti diamo una procedura chiara, con errori da evitare e alternative rapide.</p>
-
-      <div class="searchCard">
-        <label class="label" for="q">Cosa devi pulire</label>
-        <div class="searchRow">
-          <input id="q" class="input" type="search" autocomplete="off" placeholder="Esempio: box doccia calcare, forno incrostato, odore lavatrice, macchia vino su tappeto" />
-          <button id="btnSearch" class="btn" type="button">Cerca</button>
-        </div>
-
-        <div class="chips" aria-label="Suggerimenti rapidi">
-          <button class="chip" data-suggest="forno incrostato" type="button">Forno incrostato</button>
-          <button class="chip" data-suggest="calcare box doccia" type="button">Calcare box doccia</button>
-          <button class="chip" data-suggest="odore lavatrice" type="button">Odore lavatrice</button>
-          <button class="chip" data-suggest="macchia vino tappeto" type="button">Macchia vino tappeto</button>
-          <button class="chip" data-suggest="parquet opaco" type="button">Parquet opaco</button>
-        </div>
-
-        <p class="hint">Consiglio: scrivi superficie e problema. Esempio “divano tessuto macchia” oppure “lavandino acciaio aloni”.</p>
-      </div>
-
-      <section class="results" id="resultsSection" hidden>
-        <div class="resultsHeader">
-          <h2 id="resultsTitle">Risultati</h2>
-          <span id="resultsMeta" class="meta"></span>
-        </div>
-        <div id="resultsList" class="grid"></div>
-      </section>
-    </section>
-
-    <section class="doc" id="viewDoc" hidden>
-      <div class="docTop">
-        <a class="back" href="#/">Torna alla ricerca</a>
-      </div>
-      <article id="docContent" class="docContent"></article>
-      <div class="docBottom">
-        <a class="back" href="#/">Torna alla ricerca</a>
-      </div>
-    </section>
-
-    <section class="page" id="viewPage" hidden>
-      <div class="docTop">
-        <a class="back" href="#/">Torna alla ricerca</a>
-      </div>
-      <div id="pageContent" class="pageContent"></div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="container footerRow">
-      <span class="muted">Pulire Meglio, MVP statico su GitHub Pages</span>
-      <span class="muted">Contenuti pratici, strutturati, senza fronzoli</span>
+    <div style="min-width: 220px;">
+      <button id="btnSolve" type="button"
+        style="width:100%; height:44px; border-radius:10px; border:1px solid #111; background:#22c55e; font-weight:700; cursor:pointer;">
+        Genera risposta
+      </button>
+      <div id="status" style="margin-top:6px; color:#666; font-size: 14px;"></div>
     </div>
-  </footer>
+  </div>
+
+  <hr style="margin: 18px 0; border: none; border-top: 1px solid #eee;" />
+
+  <div id="answer" style="display:none;">
+    <h2 id="ansTitle" style="margin: 0 0 8px;">Risposta</h2>
+    <div id="ansMeta" style="color:#666; font-size: 14px; margin-bottom: 10px;"></div>
+    <div id="ansBody" style="border:1px solid #eee; border-radius: 12px; padding: 14px;"></div>
+  </div>
 
   <script src="app.js"></script>
 </body>
