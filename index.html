@@ -2,39 +2,183 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pulire Meglio</title>
+  <meta name="description" content="Descrivi cosa devi pulire o carica una foto. Ricevi una procedura chiara e sicura generata con AI." />
 </head>
-<body style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; max-width: 900px; margin: 30px auto; padding: 0 16px;">
-  <h1>Pulire Meglio</h1>
-  <p>Descrivi cosa devi pulire o carica una foto. Premi “Genera risposta”.</p>
 
-  <label for="q" style="display:block; font-weight:600; margin: 12px 0 6px;">Descrizione</label>
-  <textarea id="q" rows="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:10px;"
-    placeholder="Esempio: forno incrostato, calcare nel box doccia, macchia di vino sul tappeto"></textarea>
+<body style="
+  margin:0;
+  min-height:100vh;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color:#e5e7eb;
+">
 
-  <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-top: 12px;">
-    <div style="flex: 1; min-width: 260px;">
-      <label for="img" style="display:block; font-weight:600; margin: 12px 0 6px;">Foto (opzionale)</label>
-      <input id="img" type="file" accept="image/*" />
-      <div id="imgMeta" style="margin-top:6px; color:#666; font-size: 14px;"></div>
-    </div>
+  <div style="
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 16px 80px;
+  ">
 
-    <div style="min-width: 220px;">
-      <button id="btnSolve" type="button"
-        style="width:100%; height:44px; border-radius:10px; border:1px solid #111; background:#22c55e; font-weight:700; cursor:pointer;">
-        Genera risposta
-      </button>
-      <div id="status" style="margin-top:6px; color:#666; font-size: 14px;"></div>
-    </div>
-  </div>
+    <!-- HEADER -->
+    <header style="margin-bottom: 32px;">
+      <h1 style="
+        font-size: 44px;
+        margin: 0 0 6px;
+        background: linear-gradient(90deg, #22c55e, #60a5fa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      ">
+        Pulire Meglio
+      </h1>
 
-  <hr style="margin: 18px 0; border: none; border-top: 1px solid #eee;" />
+      <p style="
+        margin:0;
+        color:#94a3b8;
+        font-size:16px;
+        max-width: 680px;
+      ">
+        Descrivi cosa devi pulire o carica una foto.  
+        Ti diciamo come farlo <strong>senza rovinare nulla</strong>.
+      </p>
+    </header>
 
-  <div id="answer" style="display:none;">
-    <h2 id="ansTitle" style="margin: 0 0 8px;">Risposta</h2>
-    <div id="ansMeta" style="color:#666; font-size: 14px; margin-bottom: 10px;"></div>
-    <div id="ansBody" style="border:1px solid #eee; border-radius: 12px; padding: 14px;"></div>
+    <!-- INPUT CARD -->
+    <section style="
+      background:#020617;
+      border:1px solid #1e293b;
+      border-radius:20px;
+      padding:26px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.45);
+    ">
+
+      <label for="q" style="
+        display:block;
+        font-weight:600;
+        margin-bottom:10px;
+      ">
+        Cosa devi pulire
+      </label>
+
+      <textarea
+        id="q"
+        rows="4"
+        placeholder="Esempio: forno incrostato, calcare nel box doccia, macchia di vino sul tappeto"
+        style="
+          width:100%;
+          padding:16px;
+          border-radius:14px;
+          border:1px solid #1e293b;
+          background:#020617;
+          color:#e5e7eb;
+          resize:vertical;
+          outline:none;
+          font-size:15px;
+        "
+      ></textarea>
+
+      <div style="
+        display:flex;
+        gap:18px;
+        margin-top:22px;
+        flex-wrap:wrap;
+        align-items:flex-end;
+      ">
+
+        <!-- IMAGE UPLOAD -->
+        <div style="flex:1; min-width:240px;">
+          <label for="img" style="
+            display:block;
+            font-weight:600;
+            margin-bottom:8px;
+          ">
+            Foto (opzionale)
+          </label>
+
+          <input
+            id="img"
+            type="file"
+            accept="image/*"
+            style="color:#94a3b8;"
+          />
+
+          <div id="imgMeta" style="
+            margin-top:6px;
+            font-size:14px;
+            color:#64748b;
+          "></div>
+        </div>
+
+        <!-- CTA -->
+        <div style="min-width:220px;">
+          <button
+            id="btnSolve"
+            type="button"
+            style="
+              width:100%;
+              height:50px;
+              border-radius:16px;
+              border:none;
+              font-weight:800;
+              font-size:16px;
+              cursor:pointer;
+              background: linear-gradient(90deg, #22c55e, #16a34a);
+              color:#052e16;
+              box-shadow: 0 12px 24px rgba(34,197,94,0.35);
+            "
+          >
+            Genera risposta
+          </button>
+
+          <div id="status" style="
+            margin-top:10px;
+            font-size:14px;
+            color:#94a3b8;
+          "></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ANSWER -->
+    <section id="answer" style="display:none; margin-top:36px;">
+
+      <h2 id="ansTitle" style="
+        margin: 0 0 6px;
+        font-size:24px;
+      ">
+        Risposta
+      </h2>
+
+      <div id="ansMeta" style="
+        font-size:14px;
+        color:#94a3b8;
+        margin-bottom:14px;
+      "></div>
+
+      <div id="ansBody" style="
+        background:#020617;
+        border:1px solid #1e293b;
+        border-radius:20px;
+        padding:26px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.45);
+      "></div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="
+      margin-top:48px;
+      padding-top:20px;
+      border-top:1px solid #1e293b;
+      color:#64748b;
+      font-size:13px;
+    ">
+      Risposte generate con AI.  
+      Testa sempre in un angolo nascosto prima di applicare su superfici delicate.
+    </footer>
+
   </div>
 
   <script src="app.js"></script>
