@@ -87,7 +87,6 @@ function renderNotSupportedBox(data) {
       'Esempi: "forno incrostato", "calcare box doccia", "macchia sul divano".'
   );
 
-  // Fix overflow: max-width, box-sizing, e shadow più contenuta
   els.ansBody.innerHTML = `
     <div style="
       width:100%;
@@ -132,10 +131,21 @@ function renderClarification(data) {
   els.ansTitle.textContent = "Mi serve un dettaglio in più";
   els.ansMeta.textContent = "Rispondi alla domanda per ottenere una soluzione completa.";
 
+  const question =
+    Array.isArray(data.follow_up_questions) && data.follow_up_questions.length
+      ? data.follow_up_questions[0]
+      : "Puoi aggiungere un dettaglio in più?";
+
+  // Placeholder generico: sempre coerente
+  const genericPlaceholder = "Scrivi qui la tua risposta (una frase breve). Esempio: “macchia di caffè su cotone”";
+
+  // Hint coerente: riprende la domanda senza esempi specifici
+  const hintLine = `Rispondi alla domanda: “${escapeHtml(question)}”`;
+
   els.ansBody.innerHTML = `
     <div style="margin-bottom:14px">
       <b>Domanda</b>
-      ${toList(data.follow_up_questions, false)}
+      ${toList([question], false)}
     </div>
 
     <div style="
@@ -145,7 +155,7 @@ function renderClarification(data) {
       background:#f8fafc;
     ">
       <div style="font-size:14px; color:#64748b; margin-bottom:8px">
-        Rispondi con una frase breve.
+        ${hintLine}
       </div>
 
       <textarea id="clarifyText" rows="3" style="
@@ -158,7 +168,7 @@ function renderClarification(data) {
         background:#ffffff;
         color:#0f172a;
         outline:none;
-      " placeholder="Esempio: è vetro, calcare vecchio"></textarea>
+      " placeholder="${escapeHtml(genericPlaceholder)}"></textarea>
 
       <button id="clarifyBtn" type="button" style="
         margin-top:10px;
@@ -197,8 +207,8 @@ function renderClarification(data) {
       "Richiesta iniziale:",
       lastUserText,
       "",
-      "Risposta precedente (incompleta):",
-      JSON.stringify(lastAssistantData || {}, null, 2),
+      "Domanda di chiarimento:",
+      question,
       "",
       "Nuove informazioni:",
       extra,
