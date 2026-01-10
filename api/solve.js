@@ -19,7 +19,7 @@ function getClientIp(req) {
   return "unknown";
 }
 
-/* ---------------- RATE LIMIT ---------------- */
+/* RATE LIMIT */
 
 const RATE_LIMIT_MAX = 6;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
@@ -41,7 +41,7 @@ function checkRateLimit(ip) {
   return { ok: true, retryAfterMs: 0 };
 }
 
-/* ---------------- SIMPLE CACHE (text only) ---------------- */
+/* SIMPLE CACHE (text only) */
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const cache = new Map();
@@ -65,7 +65,7 @@ function cacheSet(key, value) {
   cache.set(key, { ts: Date.now(), value });
 }
 
-/* ---------------- DOMAIN GUARD (PULIZIA 360) ---------------- */
+/* DOMAIN GUARD (PULIZIA 360) */
 
 function isCleaningRelated(text) {
   if (!text) return false;
@@ -105,7 +105,7 @@ function isCleaningRelated(text) {
   return hasIntent || hasProblemOrSurface;
 }
 
-/* ---------------- CHECKLIST ANTI FOLLOW UP (NO AI COST) ---------------- */
+/* CHECKLIST ANTI FOLLOW UP (NO AI COST) */
 
 const SURFACE_HINTS = [
   "vetro", "acciaio", "ceramica", "marmo", "granito", "parquet", "legno",
@@ -143,6 +143,97 @@ function buildFollowUpQuestion(text) {
   return null;
 }
 
+/* OUTPUT POLICY (ADATTIVO) */
+
+function clampArray(arr, maxItems) {
+  if (!Array.isArray(arr)) return [];
+  return arr.slice(0, Math.max(0, maxItems));
+}
+
+function normalizeString(s, fallback) {
+  const out = typeof s === "string" ? s.trim() : "";
+  return out.length ? out : (fallback || "");
+}
+
+function clampText(s, maxChars) {
+  const t = normalizeString(s, "");
+  if (!maxChars || t.length <= maxChars) return t;
+  return t.slice(0, maxChars - 1).trimEnd() + "…";
+}
+
+function ensureNonEmptyList(list, fallbackItems) {
+  if (Array.isArray(list) && list.length) return list;
+  return Array.isArray(fallbackItems) ? fallbackItems : [];
+}
+
+function enforceOutputPolicy(parsed) {
+  const risk = normalizeString(parsed.risk, "Basso");
+  const difficulty = normalizeString(parsed.difficulty, "Facile");
+
+  const limitsByRisk = {
+    Basso: { stepsMax: 6, mistakesMax: 5, needsMax: 6, whenNotMax: 2, summaryChars: 260 },
+    Medio: { stepsMax: 9, mistakesMax: 6, needsMax: 7, whenNotMax: 3, summaryChars: 320 },
+    Alto: { stepsMax: 12, mistakesMax: 7, needsMax: 8, whenNotMax: 5, summaryChars: 420 }
+  };
+
+  const cfg = limitsByRisk[risk] || limitsByRisk.Basso;
+
+  parsed.title = normalizeString(parsed.title, "Soluzione di pulizia");
+  parsed.summary = clampText(parsed.summary, cfg.summaryChars);
+
+  parsed.time = normalizeString(parsed.time, "Variabile");
+  parsed.quick_alternative = clampText(parsed.quick_alternative, 260);
+
+  parsed.what_you_need = clampArray(parsed.what_you_need, cfg.needsMax);
+  parsed.steps = clampArray(parsed.steps, cfg.stepsMax);
+  parsed.mistakes = clampArray(parsed.mistakes, cfg.mistakesMax);
+  parsed.when_not_to_do = clampArray(parsed.when_not_to_do, cfg.whenNotMax);
+
+  const defaultNeeds = [
+    "Panno in microfibra o spugna non abrasiva",
+    "Acqua tiepida",
+    "Guanti (se usi detergenti)",
+    "Detergente delicato oppure sapone neutro"
+  ];
+
+  const defaultMistakes = [
+    "Non usare abrasivi su superfici delicate",
+    "Non mescolare prodotti chimici tra loro",
+    "Fai sempre una prova in un punto nascosto"
+  ];
+
+  parsed.what_you_need = ensureNonEmptyList(parsed.what_you_need, defaultNeeds);
+  parsed.mistakes = ensureNonEmptyList(parsed.mistakes, defaultMistakes);
+
+  if (!Array.isArray(parsed.steps) || parsed.steps.length === 0) {
+    parsed.steps = [
+      "Rimuovi lo sporco superficiale con un panno umido",
+      "Applica un detergente delicato e lascia agire pochi minuti",
+      "Strofina con una spugna non abrasiva",
+      "Risciacqua e asciuga bene"
+    ];
+  }
+
+  if (risk === "Alto") {
+    parsed.when_not_to_do = ensureNonEmptyList(parsed.when_not_to_do, [
+      "Se non sei sicuro del materiale o della finitura",
+      "Se la superficie è delicata e rischi scolorimento o opacizzazione",
+      "Se servono solventi forti senza adeguata ventilazione"
+    ]);
+  }
+
+  if (risk === "Basso" && difficulty === "Facile") {
+    parsed.when_not_to_do = clampArray(parsed.when_not_to_do, 1);
+  }
+
+  if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
+  if (parsed.follow_up_questions.length > 1) parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
+
+  return parsed;
+}
+
+/* PAYLOAD HELPERS */
+
 function buildNotSupportedPayload() {
   return {
     title: "Richiesta non supportata",
@@ -176,7 +267,7 @@ function buildAutoFollowUpPayload(question) {
   };
 }
 
-/* ---------------- HANDLER ---------------- */
+/* HANDLER */
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -257,22 +348,33 @@ export default async function handler(req, res) {
       ]
     };
 
+    const outputRules = [
+      "Regole di output adattivo",
+      "Se risk è Basso usa massimo 6 steps e una summary breve",
+      "Se risk è Medio usa massimo 9 steps",
+      "Se risk è Alto usa massimo 12 steps e aggiungi quando_not_to_do più completo",
+      "Non essere prolisso, vai operativo",
+      "Evita ripetizioni"
+    ].join("\n");
+
     const systemRules = [
       "Sei un assistente esperto di pulizia e manutenzione pratica.",
       "Ambiti: casa, esterni e giardinaggio, vestiti e tessuti, auto e attrezzi.",
       "Rispondi SOLO a richieste di pulizia, rimozione macchie o residui, odori, muffe, incrostazioni e manutenzione simile.",
       "",
-      "Regola anti-domande:",
-      "Non fare follow up in modo perfezionista.",
-      "Se puoi procedere con assunzioni prudenti, fai direttamente la soluzione completa e dichiara l'assunzione in una riga.",
-      "Massimo 1 follow up, e solo se indispensabile per evitare danni.",
+      "Regola anti domande",
+      "Non fare follow up in modo perfezionista",
+      "Se puoi procedere con assunzioni prudenti, fai direttamente la soluzione completa e dichiara l'assunzione in una riga",
+      "Massimo 1 follow up, e solo se indispensabile per evitare danni",
       "",
-      "Regola di chiusura:",
-      "Se followup=true, non fare altre domande. follow_up_questions deve essere [].",
+      "Regola di chiusura",
+      "Se followup=true, non fare altre domande, follow_up_questions deve essere []",
       "",
-      "Sicurezza:",
-      "Non suggerire miscele pericolose (es candeggina con ammoniaca o acidi).",
-      "Consiglia test in un angolo nascosto su tessuti e superfici delicate."
+      "Sicurezza",
+      "Non suggerire miscele pericolose come candeggina con ammoniaca o acidi",
+      "Consiglia test in un punto nascosto su tessuti e superfici delicate",
+      "",
+      outputRules
     ].join("\n");
 
     const inputParts = [{ type: "input_text", text: systemRules }];
@@ -313,17 +415,17 @@ export default async function handler(req, res) {
       if (parsed.follow_up_questions.length > 1) parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
 
       const shouldAllowFollowUp = hasImage;
-      if (!shouldAllowFollowUp) {
-        parsed.follow_up_questions = [];
-      }
+      if (!shouldAllowFollowUp) parsed.follow_up_questions = [];
     }
+
+    const finalOut = enforceOutputPolicy(parsed);
 
     if (!isFollowUp && userText && !hasImage) {
       const key = cacheKeyFor(userText);
-      cacheSet(key, parsed);
+      cacheSet(key, finalOut);
     }
 
-    res.status(200).json(parsed);
+    res.status(200).json(finalOut);
   } catch (err) {
     console.error(err);
     res.status(500).send("Server error");
