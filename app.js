@@ -28,6 +28,56 @@ function hideBox() {
   answerBox.innerHTML = "";
 }
 
+function showNiceLoadingCard(label = "Sto preparando la soluzione") {
+  showBox(`
+    <div style="
+      border:1px solid #e2e8f0;
+      background:#ffffff;
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+    ">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="
+          width:40px; height:40px;
+          border-radius:14px;
+          background: linear-gradient(135deg, #0f766e 0%, #22c55e 140%);
+          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        "></div>
+
+        <div style="flex:1;">
+          <div style="font-weight:900; letter-spacing:-0.01em; font-size:16px;">
+            ${escapeHtml(label)}
+          </div>
+          <div style="color:#64748b; font-size:14px; margin-top:2px;">
+            Un attimo, sto organizzando i passaggi in modo sicuro.
+          </div>
+        </div>
+
+        <div aria-hidden="true" style="display:flex; gap:6px; align-items:center;">
+          <span class="pm-dot"></span>
+          <span class="pm-dot"></span>
+          <span class="pm-dot"></span>
+        </div>
+      </div>
+
+      <style>
+        .pm-dot{
+          width:8px;height:8px;border-radius:999px;background:#0f766e;opacity:.35;
+          animation: pmPulse 1s infinite ease-in-out;
+        }
+        .pm-dot:nth-child(2){ animation-delay: .15s; }
+        .pm-dot:nth-child(3){ animation-delay: .3s; }
+
+        @keyframes pmPulse {
+          0%, 100% { transform: translateY(0); opacity: .35; }
+          50% { transform: translateY(-4px); opacity: .9; }
+        }
+      </style>
+    </div>
+  `);
+}
+
 async function callSolve({ text, followup }) {
   const res = await fetch("/api/solve", {
     method: "POST",
@@ -136,14 +186,16 @@ function renderFollowUp(data) {
     const answer = (userAnswer || "").trim();
     if (!answer) return;
 
-    setStatus("Sto preparando la soluzione…");
+    // ✅ Subito: nascondi il follow-up e mostra un loading carino
+    showNiceLoadingCard("Sto preparando la soluzione");
+
     btnSolve.disabled = true;
+    setStatus("");
 
     try {
       const merged = `${pendingBaseText}\n\nDettaglio aggiuntivo: ${answer}`;
       const data2 = await callSolve({ text: merged, followup: true });
       renderSolution(data2);
-      setStatus("");
     } catch (e) {
       setStatus("Errore nel generare la soluzione. Riprova.");
     } finally {
@@ -253,9 +305,10 @@ btnSolve.onclick = async () => {
 
   pendingBaseText = text;
 
-  setStatus("Sto preparando la soluzione…");
+  // Loading carino anche per la prima richiesta
+  showNiceLoadingCard("Sto preparando la soluzione");
   btnSolve.disabled = true;
-  hideBox();
+  setStatus("");
 
   try {
     const data = await callSolve({ text, followup: false });
@@ -265,8 +318,6 @@ btnSolve.onclick = async () => {
     } else {
       renderSolution(data);
     }
-
-    setStatus("");
   } catch (e) {
     setStatus("Errore nel generare la risposta. Riprova.");
   } finally {
