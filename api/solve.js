@@ -22,29 +22,85 @@ function getClientIp(req) {
   if (typeof xff === "string" && xff.length > 0) {
     return xff.split(",")[0].trim();
   }
+
+  const xri = req.headers["x-real-ip"];
+  if (typeof xri === "string" && xri.length > 0) {
+    return xri.trim();
+  }
+
   return "unknown";
 }
 
 /* =========================
-   RATE LIMIT (semplice)
+   RATE LIMIT (server side)
+   best effort in serverless
 ========================= */
 
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE = {
+  windowMs: 10 * 60 * 1000, // 10 minuti
+  maxRequests: 30,          // max richieste per IP nella finestra
+  minGapMs: 1200,           // minimo tempo tra richieste dello stesso IP
+  pruneEveryMs: 60 * 1000   // pulizia store ogni 60s
+};
+
+// Stato in memoria per istanza
 const rateState = new Map();
+let lastPruneAt = 0;
+
+function pruneRateState(now) {
+  if (now - lastPruneAt < RATE.pruneEveryMs) return;
+  lastPruneAt = now;
+
+  const cutoff = now - RATE.windowMs;
+
+  for (const [ip, entry] of rateState.entries()) {
+    if (!entry || !Array.isArray(entry.hits)) {
+      rateState.delete(ip);
+      continue;
+    }
+
+    const hits = entry.hits.filter(ts => typeof ts === "number" && ts >= cutoff);
+
+    if (hits.length === 0) {
+      rateState.delete(ip);
+      continue;
+    }
+
+    entry.hits = hits;
+
+    if (typeof entry.lastAt !== "number") entry.lastAt = hits[hits.length - 1];
+    rateState.set(ip, entry);
+  }
+}
 
 function checkRateLimit(ip) {
   const now = Date.now();
-  const hits = rateState.get(ip) || [];
-  const recent = hits.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
+  pruneRateState(now);
 
-  if (recent.length >= RATE_LIMIT_MAX) {
-    return { ok: false };
+  const cutoff = now - RATE.windowMs;
+  const entry = rateState.get(ip) || { hits: [], lastAt: 0 };
+
+  const recent = entry.hits.filter(ts => ts >= cutoff);
+  const lastAt = typeof entry.lastAt === "number" ? entry.lastAt : 0;
+
+  // cooldown tra richieste
+  if (lastAt && now - lastAt < RATE.minGapMs) {
+    const waitMs = RATE.minGapMs - (now - lastAt);
+    const retryAfterSec = Math.max(1, Math.ceil(waitMs / 1000));
+    return { ok: false, retryAfterSec, reason: "cooldown" };
+  }
+
+  // limite finestra
+  if (recent.length >= RATE.maxRequests) {
+    const oldest = recent[0];
+    const waitMs = RATE.windowMs - (now - oldest);
+    const retryAfterSec = Math.max(1, Math.ceil(waitMs / 1000));
+    return { ok: false, retryAfterSec, reason: "window_limit" };
   }
 
   recent.push(now);
-  rateState.set(ip, recent);
-  return { ok: true };
+  rateState.set(ip, { hits: recent, lastAt: now });
+  return { ok: true, retryAfterSec: 0, reason: "ok" };
 }
 
 /* =========================
@@ -59,6 +115,20 @@ function cacheKey(text) {
     .createHash("sha256")
     .update(text.toLowerCase().trim())
     .digest("hex");
+}
+
+function getCache(cacheK) {
+  const entry = cache.get(cacheK);
+  if (!entry) return null;
+  if (!entry.expiresAt || Date.now() > entry.expiresAt) {
+    cache.delete(cacheK);
+    return null;
+  }
+  return entry.value;
+}
+
+function setCache(cacheK, value) {
+  cache.set(cacheK, { value, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
 /* =========================
@@ -94,7 +164,6 @@ function isCleaningRelated(text) {
 
   return (hasAction && hasSurface) || (hasDirt && hasSurface);
 }
-
 
 /* =========================
    FOLLOW UP LOGIC
@@ -171,8 +240,15 @@ export default async function handler(req, res) {
   }
 
   const ip = getClientIp(req);
-  if (!checkRateLimit(ip).ok) {
-    res.status(429).json({ error: "rate_limited" });
+  const rl = checkRateLimit(ip);
+
+  if (!rl.ok) {
+    res.setHeader("Retry-After", String(rl.retryAfterSec));
+    res.status(429).json({
+      error: "rate_limited",
+      message: "Troppe richieste. Riprova tra poco.",
+      retry_after_sec: rl.retryAfterSec
+    });
     return;
   }
 
@@ -182,7 +258,7 @@ export default async function handler(req, res) {
   }
 
   const { text = "", followup = false } = req.body || {};
-  const userText = text.trim();
+  const userText = String(text).trim();
 
   if (!userText) {
     res.status(400).json({ error: "empty_input" });
@@ -227,8 +303,9 @@ export default async function handler(req, res) {
   }
 
   const cacheK = cacheKey(userText);
-  if (cache.has(cacheK)) {
-    res.status(200).json(cache.get(cacheK));
+  const cached = getCache(cacheK);
+  if (cached) {
+    res.status(200).json(cached);
     return;
   }
 
@@ -270,7 +347,7 @@ export default async function handler(req, res) {
     parsed.follow_up_questions = [];
     parsed.follow_up_options = [];
 
-    cache.set(cacheK, parsed);
+    setCache(cacheK, parsed);
     res.status(200).json(parsed);
   } catch (err) {
     res.status(500).json({
