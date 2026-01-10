@@ -56,7 +56,7 @@ function showNiceLoadingCard(label = "Sto preparando la soluzione") {
             ${escapeHtml(label)}
           </div>
           <div style="color:#64748b; font-size:14px; margin-top:2px;">
-            Sto pulendo le informazioni giuste per te.
+            Sto preparando le informazioni giuste per te.
           </div>
         </div>
       </div>
