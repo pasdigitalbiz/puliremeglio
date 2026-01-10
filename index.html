@@ -1,16 +1,14 @@
 <!doctype html>
 <html lang="it">
   <head>
+
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9023846355194456"
      crossorigin="anonymous"></script>
     
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pulire Meglio</title>
-    <meta
-      name="description"
-      content="Consigli pratici e sicuri per pulire casa, vestiti, esterni e auto."
-    />
+    <meta name="description" content="Consigli pratici e sicuri per pulire senza fare danni." />
 
     <style>
       :root {
@@ -23,6 +21,7 @@
         --brand: #0f766e;
         --brand2: #22c55e;
         --ok: #16a34a;
+
         --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         --shadowSoft: 0 10px 22px rgba(15, 23, 42, 0.06);
         --radius: 18px;
@@ -31,11 +30,20 @@
       * { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
 
+      /* FIX: sfondo coerente anche sotto i contenuti */
+      html, body { height: 100%; }
       body {
         margin: 0;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         color: var(--text);
-        background: radial-gradient(1200px 700px at 20% 0%, #eef7ff 0%, var(--bg) 55%) no-repeat;
+        background:
+          radial-gradient(1200px 700px at 20% 0%, #eef7ff 0%, var(--bg) 55%) no-repeat,
+          var(--bg);
+
+        /* FIX: layout “chiuso” con footer in basso */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
       }
 
       /* Header */
@@ -72,48 +80,11 @@
         border-radius: 14px;
         background: linear-gradient(135deg, var(--brand) 0%, var(--brand2) 140%);
         box-shadow: var(--shadowSoft);
-        position: relative;
-        overflow: hidden;
       }
 
-      .brandMark::after {
-        content: "";
-        position: absolute;
-        inset: -30%;
-        background: linear-gradient(
-          120deg,
-          rgba(255,255,255,0) 35%,
-          rgba(255,255,255,0.55) 50%,
-          rgba(255,255,255,0) 65%
-        );
-        transform: rotate(15deg);
-        animation: shine 4.5s infinite;
-      }
-
-      @keyframes shine {
-        0% { transform: translateX(-70%) rotate(15deg); opacity: 0; }
-        10% { opacity: 1; }
-        30% { transform: translateX(70%) rotate(15deg); opacity: 0; }
-        100% { opacity: 0; }
-      }
-
-      .brandText {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.05;
-      }
-
-      .brandName {
-        font-weight: 950;
-        letter-spacing: -0.02em;
-        font-size: 16px;
-      }
-
-      .brandTag {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 3px;
-      }
+      .brandText { display: flex; flex-direction: column; line-height: 1.05; }
+      .brandName { font-weight: 950; letter-spacing: -0.02em; font-size: 16px; }
+      .brandTag { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
       .badge {
         display: inline-flex;
@@ -137,37 +108,20 @@
         background: #f59e0b;
       }
 
-      /* Page */
-      .wrap {
+      /* Main */
+      main.wrap {
         max-width: 980px;
         margin: 0 auto;
-        padding: 30px 18px 70px;
+        padding: 26px 18px 22px; /* FIX: ridotto bottom padding */
+        width: 100%;
+        flex: 1; /* FIX: il main “riempie” e il footer va in basso */
       }
 
-      .hero {
-        margin: 18px 0 18px;
-      }
+      .hero { margin: 18px 0 18px; }
+      h1 { margin: 0; font-size: 44px; letter-spacing: -0.03em; line-height: 1.05; }
+      .sub { margin: 12px 0 0; font-size: 18px; color: var(--muted); max-width: 70ch; }
 
-      h1 {
-        margin: 0;
-        font-size: 44px;
-        letter-spacing: -0.03em;
-        line-height: 1.05;
-      }
-
-      .sub {
-        margin: 12px 0 0;
-        font-size: 18px;
-        color: var(--muted);
-        max-width: 70ch;
-      }
-
-      .checks {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 18px;
-      }
+      .checks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
 
       .check {
         display: inline-flex;
@@ -205,12 +159,7 @@
         .topbarInner { padding: 10px 14px; }
       }
 
-      label {
-        display: block;
-        font-weight: 950;
-        margin: 6px 0 10px;
-        font-size: 16px;
-      }
+      label { display: block; font-weight: 950; margin: 6px 0 10px; font-size: 16px; }
 
       textarea {
         width: 100%;
@@ -237,17 +186,9 @@
         color: var(--muted);
       }
 
-      .examples {
-        margin-top: 8px;
-        font-size: 14px;
-        color: #6b7280;
-      }
+      .examples { margin-top: 8px; font-size: 14px; color: #6b7280; }
 
-      .rightCol {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
+      .rightCol { display: flex; flex-direction: column; gap: 12px; }
 
       .fileBox {
         padding: 12px 14px;
@@ -268,17 +209,9 @@
         box-shadow: 0 14px 28px rgba(15, 118, 110, 0.22);
       }
 
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        box-shadow: none;
-      }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
 
-      .status {
-        min-height: 18px;
-        font-size: 14px;
-        color: var(--muted);
-      }
+      .status { min-height: 18px; font-size: 14px; color: var(--muted); }
 
       .answer {
         display: none;
@@ -290,12 +223,25 @@
         padding: 20px;
       }
 
-      .footer {
-        margin-top: 18px;
+      /* Footer: chiude la pagina, elimina l’effetto “vuoto” */
+      footer.footer {
+        border-top: 1px solid rgba(226, 232, 240, 0.9);
+        background: rgba(246, 248, 251, 0.9);
+      }
+
+      .footerInner {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 14px 18px;
         color: var(--muted);
         font-size: 13px;
-        line-height: 1.5;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
       }
+
+      .footerInner a { color: var(--muted); text-decoration: underline; }
     </style>
   </head>
 
@@ -357,20 +303,26 @@
       </section>
 
       <section id="answer" class="answer"></section>
-
-      <div class="footer">
-        Versione beta: stiamo migliorando il servizio. Se qualcosa non torna, prova a riscrivere la richiesta in modo più semplice.
-      </div>
     </main>
 
+    <footer class="footer">
+      <div class="footerInner">
+        <div>Versione beta: stiamo migliorando il servizio. Se qualcosa non torna, prova a riscrivere la richiesta in modo più semplice.</div>
+        <div><a href="/" id="toTop">Torna su</a></div>
+      </div>
+    </footer>
+
     <script>
-      // Home link: su SPA/one page, assicura scroll top
       const homeLink = document.getElementById("homeLink");
-      homeLink?.addEventListener("click", (e) => {
-        // lascia comunque il link a "/" per coerenza
-        // ma facciamo anche scroll top immediato
+      const toTop = document.getElementById("toTop");
+
+      function goTop(e) {
+        if (e) e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
-      });
+      }
+
+      homeLink?.addEventListener("click", goTop);
+      toTop?.addEventListener("click", goTop);
     </script>
 
     <script src="./app.js"></script>
