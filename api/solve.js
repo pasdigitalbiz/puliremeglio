@@ -22,40 +22,51 @@ function getClientIp(req) {
   return "unknown";
 }
 
+/* ---------------- RATE LIMIT ---------------- */
+
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-
-const rateState = {
-  byIp: new Map()
-};
+const rateState = { byIp: new Map() };
 
 function checkRateLimit(ip) {
   const now = Date.now();
-
   const arr = rateState.byIp.get(ip) || [];
-  const fresh = arr.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+  const fresh = arr.filter(ts => now - ts < RATE_LIMIT_WINDOW_MS);
 
   if (fresh.length >= RATE_LIMIT_MAX) {
-    const oldest = fresh[0];
-    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldest);
+    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - fresh[0]);
     rateState.byIp.set(ip, fresh);
     return { ok: false, retryAfterMs };
   }
 
   fresh.push(now);
   rateState.byIp.set(ip, fresh);
-  return { ok: true, retryAfterMs: 0 };
+  return { ok: true };
 }
 
-function isFinalizationRequest(userText) {
-  const t = (userText || "").toLowerCase();
-  return (
-    t.includes("nuove informazioni") ||
-    t.includes("soluzione completa e finale") ||
-    t.includes("genera ora una soluzione completa") ||
-    t.includes("aggiorna la soluzione")
-  );
+/* ---------------- DOMAIN GUARD ---------------- */
+
+/**
+ * Regola: rispondiamo SOLO a pulizia domestica
+ */
+function isCleaningRelated(text) {
+  if (!text) return false;
+
+  const t = text.toLowerCase();
+
+  const keywords = [
+    "pulire", "pulizia", "sporco", "macchia", "macchie",
+    "incrost", "calcare", "grasso", "unto", "odore", "puzza",
+    "muffa", "ruggine", "aloni",
+    "forno", "doccia", "lavandino", "lavatrice", "frigo",
+    "tappeto", "divano", "tessuto", "vetro", "specchio",
+    "parquet", "pavimento", "acciaio", "ceramica"
+  ];
+
+  return keywords.some(k => t.includes(k));
 }
+
+/* ---------------- HANDLER ---------------- */
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -67,12 +78,11 @@ export default async function handler(req, res) {
   const rl = checkRateLimit(ip);
 
   if (!rl.ok) {
-    const retryAfterSeconds = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
+    const retryAfterSeconds = Math.ceil(rl.retryAfterMs / 1000);
     res.setHeader("Retry-After", String(retryAfterSeconds));
     res.status(429).json({
       error: "rate_limited",
-      message: "Hai raggiunto il limite temporaneo di richieste. Riprova tra qualche minuto.",
-      retry_after_seconds: retryAfterSeconds
+      message: "Hai raggiunto il limite temporaneo di richieste. Riprova tra qualche minuto."
     });
     return;
   }
@@ -81,25 +91,38 @@ export default async function handler(req, res) {
     const { text, image_data_url } = req.body || {};
     const userText = (text || "").trim();
 
-    const finalizationMode = isFinalizationRequest(userText);
+    /* 🚫 BLOCCO DOMANDE NON INERENTI */
+    if (userText && !isCleaningRelated(userText) && !image_data_url) {
+      res.status(200).json({
+        title: "Richiesta non supportata",
+        summary:
+          "Questo strumento risponde solo a problemi di pulizia domestica, superfici e macchie.",
+        difficulty: "Facile",
+        time: "Immediato",
+        risk: "Basso",
+        what_you_need: [],
+        steps: [],
+        mistakes: [],
+        when_not_to_do: [],
+        quick_alternative:
+          "Prova a descrivere qualcosa che devi pulire, ad esempio: \"forno incrostato\" o \"macchia sul tappeto\".",
+        follow_up_questions: []
+      });
+      return;
+    }
+
+    /* ---------------- PROMPT ---------------- */
 
     const inputParts = [
       {
         type: "input_text",
         text: [
           "Sei un assistente esperto di pulizia domestica.",
-          "Genera una risposta pratica e sicura.",
-          "Evita combinazioni rischiose di prodotti.",
-          "Se la superficie è delicata, proponi sempre un test in un angolo nascosto.",
-          "",
-          "Regola di chiarezza:",
-          "Se mancano informazioni davvero critiche, fai al massimo UNA sola domanda di follow-up (una sola frase) e basta.",
-          "Non fare liste di domande.",
-          "",
-          "Regola di chiusura:",
-          "Se l'utente ha fornito nuove informazioni (follow-up), devi produrre una soluzione completa e finale.",
-          "In quel caso follow_up_questions deve essere un array vuoto.",
-          "Non chiedere altre domande nel secondo giro."
+          "Rispondi SOLO a problemi di pulizia, superfici, sporco e macchie.",
+          "Se la richiesta non riguarda la pulizia, devi rifiutare.",
+          "Evita combinazioni pericolose.",
+          "Se mancano informazioni critiche, fai al massimo UNA sola domanda.",
+          "Dopo il follow-up, fornisci la soluzione completa e finale."
         ].join("\n")
       }
     ];
@@ -116,11 +139,8 @@ export default async function handler(req, res) {
       });
       inputParts.push({
         type: "input_text",
-        text: [
-          "Analizza la foto per capire superficie e tipo di sporco.",
-          "Se non sei sicuro, dichiaralo e proponi la procedura più prudente.",
-          "Applica la regola: al massimo UNA domanda di follow-up, solo se strettamente necessaria."
-        ].join("\n")
+        text:
+          "Analizza la foto solo in ottica di pulizia domestica. Se non è chiaro, usa l'approccio più prudente."
       });
     }
 
@@ -138,11 +158,7 @@ export default async function handler(req, res) {
         mistakes: { type: "array", items: { type: "string" } },
         when_not_to_do: { type: "array", items: { type: "string" } },
         quick_alternative: { type: "string" },
-        follow_up_questions: {
-          type: "array",
-          maxItems: 1,
-          items: { type: "string" }
-        }
+        follow_up_questions: { type: "array", maxItems: 1, items: { type: "string" } }
       },
       required: [
         "title",
@@ -172,22 +188,10 @@ export default async function handler(req, res) {
       }
     });
 
-    const outText = response.output_text || "";
-    const parsed = safeJsonParse(outText);
-
+    const parsed = safeJsonParse(response.output_text || "");
     if (!parsed) {
-      res.status(500).send("Model returned non JSON output");
+      res.status(500).send("Invalid AI output");
       return;
-    }
-
-    if (finalizationMode) {
-      if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
-      parsed.follow_up_questions = [];
-    } else {
-      if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
-      if (parsed.follow_up_questions.length > 1) {
-        parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
-      }
     }
 
     res.status(200).json(parsed);
