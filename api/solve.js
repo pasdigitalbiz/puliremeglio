@@ -10,9 +10,60 @@ function safeJsonParse(s) {
   }
 }
 
+function getClientIp(req) {
+  const xff = req.headers["x-forwarded-for"];
+  if (typeof xff === "string" && xff.length > 0) {
+    return xff.split(",")[0].trim();
+  }
+  const realIp = req.headers["x-real-ip"];
+  if (typeof realIp === "string" && realIp.length > 0) {
+    return realIp.trim();
+  }
+  return "unknown";
+}
+
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+
+const rateState = {
+  byIp: new Map()
+};
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+
+  const arr = rateState.byIp.get(ip) || [];
+  const fresh = arr.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+
+  if (fresh.length >= RATE_LIMIT_MAX) {
+    const oldest = fresh[0];
+    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldest);
+    rateState.byIp.set(ip, fresh);
+    return { ok: false, retryAfterMs };
+  }
+
+  fresh.push(now);
+  rateState.byIp.set(ip, fresh);
+  return { ok: true, retryAfterMs: 0 };
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).send("Method not allowed");
+    return;
+  }
+
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(ip);
+
+  if (!rl.ok) {
+    const retryAfterSeconds = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
+    res.setHeader("Retry-After", String(retryAfterSeconds));
+    res.status(429).json({
+      error: "rate_limited",
+      message: "Hai raggiunto il limite temporaneo di richieste. Riprova tra qualche minuto.",
+      retry_after_seconds: retryAfterSeconds
+    });
     return;
   }
 
