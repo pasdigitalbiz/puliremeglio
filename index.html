@@ -4,59 +4,58 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pulire Meglio</title>
-  <meta name="description" content="Descrivi cosa devi pulire o carica una foto. Ricevi una procedura chiara e sicura generata con AI." />
+  <meta name="description" content="Come pulire qualsiasi cosa in modo sicuro e semplice. Descrivi il problema o carica una foto." />
 </head>
 
 <body style="
   margin:0;
   min-height:100vh;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background: linear-gradient(135deg, #020617, #0f172a);
-  color:#e5e7eb;
+  background:#f8fafc;
+  color:#0f172a;
 ">
 
   <div style="
-    max-width: 920px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 48px 16px 80px;
+    padding: 40px 16px 80px;
   ">
 
     <!-- HEADER -->
-    <header style="margin-bottom: 32px;">
+    <header style="margin-bottom:32px;">
       <h1 style="
-        font-size: 44px;
-        margin: 0 0 6px;
-        background: linear-gradient(90deg, #22c55e, #60a5fa);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size:42px;
+        margin:0 0 8px;
+        color:#0f766e;
       ">
         Pulire Meglio
       </h1>
 
       <p style="
         margin:0;
-        color:#94a3b8;
         font-size:16px;
-        max-width: 680px;
+        color:#475569;
+        max-width:680px;
       ">
         Descrivi cosa devi pulire o carica una foto.  
-        Ti diciamo come farlo <strong>senza rovinare nulla</strong>.
+        Ti diciamo <strong>come farlo in modo sicuro</strong>, senza rovinare nulla.
       </p>
     </header>
 
     <!-- INPUT CARD -->
     <section style="
-      background:#020617;
-      border:1px solid #1e293b;
-      border-radius:20px;
-      padding:26px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.45);
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      border-radius:16px;
+      padding:24px;
+      box-shadow:0 10px 25px rgba(15,23,42,0.06);
     ">
 
       <label for="q" style="
         display:block;
         font-weight:600;
-        margin-bottom:10px;
+        margin-bottom:8px;
+        color:#0f172a;
       ">
         Cosa devi pulire
       </label>
@@ -67,11 +66,11 @@
         placeholder="Esempio: forno incrostato, calcare nel box doccia, macchia di vino sul tappeto"
         style="
           width:100%;
-          padding:16px;
-          border-radius:14px;
-          border:1px solid #1e293b;
-          background:#020617;
-          color:#e5e7eb;
+          padding:14px;
+          border-radius:10px;
+          border:1px solid #cbd5e1;
+          background:#ffffff;
+          color:#0f172a;
           resize:vertical;
           outline:none;
           font-size:15px;
@@ -80,18 +79,18 @@
 
       <div style="
         display:flex;
-        gap:18px;
-        margin-top:22px;
+        gap:16px;
+        margin-top:20px;
         flex-wrap:wrap;
         align-items:flex-end;
       ">
 
-        <!-- IMAGE UPLOAD -->
+        <!-- IMAGE -->
         <div style="flex:1; min-width:240px;">
           <label for="img" style="
             display:block;
             font-weight:600;
-            margin-bottom:8px;
+            margin-bottom:6px;
           ">
             Foto (opzionale)
           </label>
@@ -100,7 +99,7 @@
             id="img"
             type="file"
             accept="image/*"
-            style="color:#94a3b8;"
+            style="color:#475569;"
           />
 
           <div id="imgMeta" style="
@@ -117,24 +116,24 @@
             type="button"
             style="
               width:100%;
-              height:50px;
-              border-radius:16px;
+              height:46px;
+              border-radius:12px;
               border:none;
-              font-weight:800;
+              font-weight:700;
               font-size:16px;
               cursor:pointer;
-              background: linear-gradient(90deg, #22c55e, #16a34a);
-              color:#052e16;
-              box-shadow: 0 12px 24px rgba(34,197,94,0.35);
+              background:#0f766e;
+              color:white;
+              box-shadow:0 6px 14px rgba(15,118,110,0.25);
             "
           >
             Genera risposta
           </button>
 
           <div id="status" style="
-            margin-top:10px;
+            margin-top:8px;
             font-size:14px;
-            color:#94a3b8;
+            color:#64748b;
           "></div>
         </div>
 
@@ -142,27 +141,29 @@
     </section>
 
     <!-- ANSWER -->
-    <section id="answer" style="display:none; margin-top:36px;">
+    <section id="answer" style="display:none; margin-top:32px;">
 
       <h2 id="ansTitle" style="
-        margin: 0 0 6px;
         font-size:24px;
+        margin-bottom:6px;
+        color:#0f172a;
       ">
         Risposta
       </h2>
 
       <div id="ansMeta" style="
         font-size:14px;
-        color:#94a3b8;
-        margin-bottom:14px;
+        color:#64748b;
+        margin-bottom:12px;
       "></div>
 
       <div id="ansBody" style="
-        background:#020617;
-        border:1px solid #1e293b;
-        border-radius:20px;
-        padding:26px;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.45);
+        background:#ffffff;
+        border:1px solid #e2e8f0;
+        border-radius:16px;
+        padding:24px;
+        box-shadow:0 10px 25px rgba(15,23,42,0.06);
+        line-height:1.55;
       "></div>
 
     </section>
@@ -170,13 +171,13 @@
     <!-- FOOTER -->
     <footer style="
       margin-top:48px;
-      padding-top:20px;
-      border-top:1px solid #1e293b;
-      color:#64748b;
+      padding-top:16px;
+      border-top:1px solid #e2e8f0;
       font-size:13px;
+      color:#64748b;
     ">
       Risposte generate con AI.  
-      Testa sempre in un angolo nascosto prima di applicare su superfici delicate.
+      Testa sempre in un punto nascosto prima di applicare su superfici delicate.
     </footer>
 
   </div>
