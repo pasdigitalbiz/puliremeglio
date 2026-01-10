@@ -60,6 +60,65 @@ function startCooldown(seconds) {
   }, 300);
 }
 
+function isNotSupportedResponse(data) {
+  if (!data || typeof data !== "object") return false;
+
+  const t = (data.title || "").toLowerCase();
+  if (t.includes("richiesta non supportata")) return true;
+
+  const s = (data.summary || "").toLowerCase();
+  if (s.includes("solo a problemi di pulizia")) return true;
+
+  return false;
+}
+
+function renderNotSupportedBox(data) {
+  els.answer.style.display = "block";
+  els.ansTitle.textContent = "Questo tool serve per la pulizia";
+  els.ansMeta.textContent = "";
+
+  const summary = escapeHtml(
+    data.summary ||
+      "Questo strumento risponde solo a problemi di pulizia domestica, superfici e macchie."
+  );
+
+  const hint = escapeHtml(
+    data.quick_alternative ||
+      'Esempi: "forno incrostato", "calcare box doccia", "macchia sul divano".'
+  );
+
+  els.ansBody.innerHTML = `
+    <div style="
+      padding:16px;
+      border-radius:14px;
+      border:1px solid #e2e8f0;
+      background:#f0fdf4;
+      box-shadow:0 8px 18px rgba(15,23,42,0.06);
+    ">
+      <div style="font-weight:800; color:#065f46; margin-bottom:8px;">
+        Posso aiutarti a pulire, non a rispondere a domande generiche.
+      </div>
+
+      <div style="color:#0f172a; margin-bottom:10px; line-height:1.5;">
+        ${summary}
+      </div>
+
+      <div style="
+        padding:12px;
+        border-radius:12px;
+        background:#ffffff;
+        border:1px solid #e2e8f0;
+        color:#0f172a;
+      ">
+        <div style="font-weight:700; margin-bottom:6px;">Prova così</div>
+        <div style="color:#475569; line-height:1.5;">
+          ${hint}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderClarification(data) {
   els.answer.style.display = "block";
   els.ansTitle.textContent = "Mi serve un dettaglio in più";
@@ -173,6 +232,11 @@ function renderClarification(data) {
 }
 
 function renderAnswer(data) {
+  if (isNotSupportedResponse(data)) {
+    renderNotSupportedBox(data);
+    return;
+  }
+
   const hasQuestions =
     Array.isArray(data.follow_up_questions) &&
     data.follow_up_questions.length > 0;
