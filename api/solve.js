@@ -66,19 +66,35 @@ function cacheKey(text) {
 ========================= */
 
 function isCleaningRelated(text) {
+  if (!text) return false;
   const t = text.toLowerCase();
 
-  const keywords = [
-    "pulire","pulizia","lavare","smacchiare","macchia","sporco","grasso","unto",
-    "odore","muffa","calcare","incrost","ruggine","aloni","olio","vino","caffè",
-    "fango","erba","trucco",
-    "forno","doccia","lavandino","wc","pavimento","vetro","acciaio","legno",
-    "tappeto","divano","scarpe","maglia","maglione","camicia","jeans",
-    "auto","cerchi","sedili","giardino","terrazzo"
+  const actions = [
+    "pulire","pulizia","lavare","smacchiare","rimuovere","togliere",
+    "eliminare","igienizzare","spolverare","sgrassare","disinfettare"
   ];
 
-  return keywords.some(k => t.includes(k));
+  const dirt = [
+    "polvere","sporco","macchia","grasso","unto","odore","puzza",
+    "muffa","calcare","incrost","ruggine","aloni","olio","sabbia",
+    "fango","erba","peli","residui"
+  ];
+
+  const surfaces = [
+    "parquet","pavimento","legno","piastrelle","vetro","acciaio",
+    "divano","tappeto","moquette","materasso","letto","tavolo",
+    "forno","doccia","lavandino","wc",
+    "scarpe","maglia","maglione","camicia","jeans",
+    "auto","cerchi","sedili","giardino","terrazzo","balcone"
+  ];
+
+  const hasAction = actions.some(a => t.includes(a));
+  const hasDirt = dirt.some(d => t.includes(d));
+  const hasSurface = surfaces.some(s => t.includes(s));
+
+  return (hasAction && hasSurface) || (hasDirt && hasSurface);
 }
+
 
 /* =========================
    FOLLOW UP LOGIC
