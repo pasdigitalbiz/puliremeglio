@@ -91,7 +91,7 @@ function isCleaningRelated(text) {
     "parquet", "pavimento", "tappeto", "moquette", "divano", "materasso",
     "tenda", "cuscino",
     "scarpe", "sneakers", "suola",
-    "maglia", "pantaloni", "giacca", "jeans", "camicia", "cappotto",
+    "maglia", "maglione", "pantaloni", "giacca", "jeans", "camicia", "cappotto",
     "lavatrice", "asciugatrice", "lavastoviglie",
     "giardino", "terrazzo", "balcone", "vialetto", "patio", "pietra",
     "legno", "mobili da giardino", "griglia", "bbq",
@@ -107,6 +107,7 @@ function isCleaningRelated(text) {
 
 /* CHECKLIST ANTI FOLLOW UP (NO AI COST) */
 
+/* Superfici materiali generiche */
 const SURFACE_HINTS = [
   "vetro", "acciaio", "ceramica", "marmo", "granito", "parquet", "legno",
   "tessuto", "cotone", "lana", "seta", "pelle", "camoscio", "plastica",
@@ -114,10 +115,26 @@ const SURFACE_HINTS = [
   "auto", "cerchi", "sedili", "vialetto", "pietra"
 ];
 
+/* Oggetti/capi che implicano già il materiale “tessuto” */
+const TEXTILE_OBJECT_HINTS = [
+  "maglia", "maglione", "felpa", "t-shirt", "tshirt", "camicia", "polo",
+  "pantaloni", "jeans", "gonna", "abito", "vestito", "giacca", "cappotto",
+  "sciarpa", "guanti", "calze", "intimo", "lenzuola", "coperta", "plaid",
+  "tenda", "tovaglia", "asciugamano", "accappatoio", "divano", "cuscino",
+  "materasso", "tappeto", "moquette"
+];
+
 const PROBLEM_HINTS = [
   "macchia", "calcare", "incrost", "muffa", "odore", "puzza", "grasso",
   "unto", "ruggine", "aloni", "resina", "vernice", "colla", "olio",
   "fango", "polvere"
+];
+
+/* Macchie specifiche: se mancano, chiediamo “che tipo di macchia” */
+const STAIN_TYPE_HINTS = [
+  "caff", "vino", "olio", "grasso", "sugo", "pomodoro", "cioccol", "sangue",
+  "inchiostro", "erba", "fango", "trucco", "fondotinta", "rossetto",
+  "urina", "vomito", "ruggine", "candeggina"
 ];
 
 function containsAny(text, arr) {
@@ -127,17 +144,48 @@ function containsAny(text, arr) {
 
 function buildFollowUpQuestion(text) {
   const t = (text || "").trim();
-  const hasSurface = containsAny(t, SURFACE_HINTS);
-  const hasProblem = containsAny(t, PROBLEM_HINTS);
+  const lower = t.toLowerCase();
+
+  const mentionsTextileObject = containsAny(lower, TEXTILE_OBJECT_HINTS);
+  const hasSurface =
+    containsAny(lower, SURFACE_HINTS) || mentionsTextileObject;
+
+  const hasProblem = containsAny(lower, PROBLEM_HINTS);
+
+  const mentionsStainWord = lower.includes("macchia") || lower.includes("macchie");
+  const hasStainType = containsAny(lower, STAIN_TYPE_HINTS);
 
   if (!hasSurface && !hasProblem) {
-    return "Su cosa devi intervenire e su quale superficie o materiale si trova lo sporco o la macchia?";
+    return "Cosa devi pulire e qual è il problema? (es: ‘maglione macchia di vino’, ‘box doccia calcare’, ‘vialetto olio’)";
   }
+
+  /* Caso tessile: “maglione” è già tessuto, quindi NON chiediamo la superficie */
+  if (mentionsTextileObject) {
+    if (!hasStainType && mentionsStainWord) {
+      return "Che tipo di macchia è e da quanto tempo? (es: caffè, vino, olio, trucco)";
+    }
+    if (!mentionsStainWord && !hasProblem) {
+      return "Che problema devi rimuovere dal capo? (es: macchia, odore, alone) e da quanto tempo?";
+    }
+    if (!hasStainType && hasProblem) {
+      return "Che tipo di sporco o macchia è e da quanto tempo? (es: olio, vino, caffè, erba)";
+    }
+    return null;
+  }
+
+  /* Caso non tessile: se manca superficie chiediamo superficie */
   if (!hasSurface) {
-    return "Su quale superficie o materiale si trova lo sporco o la macchia? (es vetro, tessuto, legno, acciaio, pietra)";
+    return "Su quale superficie o materiale si trova lo sporco o la macchia? (es vetro, legno, acciaio, pietra, plastica)";
   }
+
+  /* Se manca il problema chiediamo il problema */
   if (!hasProblem) {
     return "Che tipo di sporco o problema è? (es calcare, grasso, muffa, macchia di cibo, resina, ruggine)";
+  }
+
+  /* Se è una macchia ma non è specificata, chiediamo tipo macchia */
+  if (mentionsStainWord && !hasStainType) {
+    return "Che tipo di macchia è e da quanto tempo? (es caffè, vino, olio, sangue)";
   }
 
   return null;
