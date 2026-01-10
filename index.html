@@ -18,6 +18,7 @@
         --border: #e2e8f0;
 
         --brand: #0f766e;
+        --brand2: #22c55e;
         --ok: #16a34a;
         --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         --shadowSoft: 0 10px 22px rgba(15, 23, 42, 0.06);
@@ -25,25 +26,93 @@
       }
 
       * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
 
       body {
         margin: 0;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         color: var(--text);
-        background: radial-gradient(1200px 600px at 20% 0%, #eef7ff 0%, var(--bg) 55%) no-repeat;
+        background: radial-gradient(1200px 700px at 20% 0%, #eef7ff 0%, var(--bg) 55%) no-repeat;
       }
 
-      .wrap {
-        max-width: 980px;
+      /* Header */
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(10px);
+        background: rgba(246, 248, 251, 0.78);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      }
+
+      .topbarInner {
+        max-width: 1020px;
         margin: 0 auto;
-        padding: 42px 18px 70px;
-        position: relative;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
       }
 
-      .betaBadge {
+      .brandLink {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .brandMark {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--brand) 0%, var(--brand2) 140%);
+        box-shadow: var(--shadowSoft);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .brandMark::after {
+        content: "";
         position: absolute;
-        top: 18px;
-        right: 18px;
+        inset: -30%;
+        background: linear-gradient(
+          120deg,
+          rgba(255,255,255,0) 35%,
+          rgba(255,255,255,0.55) 50%,
+          rgba(255,255,255,0) 65%
+        );
+        transform: rotate(15deg);
+        animation: shine 4.5s infinite;
+      }
+
+      @keyframes shine {
+        0% { transform: translateX(-70%) rotate(15deg); opacity: 0; }
+        10% { opacity: 1; }
+        30% { transform: translateX(70%) rotate(15deg); opacity: 0; }
+        100% { opacity: 0; }
+      }
+
+      .brandText {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.05;
+      }
+
+      .brandName {
+        font-weight: 950;
+        letter-spacing: -0.02em;
+        font-size: 16px;
+      }
+
+      .brandTag {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+
+      .badge {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -55,50 +124,45 @@
         font-weight: 900;
         font-size: 13px;
         color: var(--text);
+        white-space: nowrap;
       }
 
-      .betaDot {
+      .badgeDot {
         width: 10px;
         height: 10px;
         border-radius: 999px;
         background: #f59e0b;
       }
 
-      .hero { margin-bottom: 26px; }
-
-      .brandRow {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 14px;
+      /* Page */
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 30px 18px 70px;
       }
 
-      .logo {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, var(--brand) 0%, #22c55e 140%);
-        box-shadow: var(--shadowSoft);
+      .hero {
+        margin: 18px 0 18px;
       }
 
       h1 {
         margin: 0;
-        font-size: 42px;
-        letter-spacing: -0.02em;
+        font-size: 44px;
+        letter-spacing: -0.03em;
         line-height: 1.05;
       }
 
       .sub {
-        margin: 10px 0 0;
+        margin: 12px 0 0;
         font-size: 18px;
         color: var(--muted);
-        max-width: 60ch;
+        max-width: 70ch;
       }
 
       .checks {
         display: flex;
         flex-wrap: wrap;
-        gap: 14px;
+        gap: 12px;
         margin-top: 18px;
       }
 
@@ -110,16 +174,13 @@
         border-radius: 999px;
         background: #ffffff;
         border: 1px solid var(--border);
-        font-weight: 800;
+        font-weight: 900;
         font-size: 14px;
         color: var(--text);
+        box-shadow: var(--shadowSoft);
       }
 
-      .checkIcon {
-        color: var(--ok);
-        font-size: 16px;
-        line-height: 1;
-      }
+      .checkIcon { color: var(--ok); font-size: 16px; line-height: 1; }
 
       .card {
         background: var(--card);
@@ -138,12 +199,12 @@
       @media (max-width: 860px) {
         h1 { font-size: 34px; }
         .grid { grid-template-columns: 1fr; }
-        .betaBadge { position: static; margin: 0 0 14px; }
+        .topbarInner { padding: 10px 14px; }
       }
 
       label {
         display: block;
-        font-weight: 900;
+        font-weight: 950;
         margin: 6px 0 10px;
         font-size: 16px;
       }
@@ -197,7 +258,7 @@
         border: none;
         border-radius: 16px;
         cursor: pointer;
-        font-weight: 900;
+        font-weight: 950;
         font-size: 16px;
         color: #ffffff;
         background: linear-gradient(135deg, var(--brand) 0%, #0ea5a4 140%);
@@ -236,28 +297,37 @@
   </head>
 
   <body>
-    <div class="wrap">
-      <div class="betaBadge" title="Versione in miglioramento">
-        <span class="betaDot"></span> Beta
-      </div>
-
-      <div class="hero">
-        <div class="brandRow">
-          <div class="logo"></div>
-          <div>
-            <h1>Come pulire nel modo giusto</h1>
-            <p class="sub">Consigli pratici e sicuri per pulire senza fare danni.</p>
+    <header class="topbar">
+      <div class="topbarInner">
+        <a class="brandLink" href="/" id="homeLink" aria-label="Vai alla home">
+          <div class="brandMark" aria-hidden="true"></div>
+          <div class="brandText">
+            <div class="brandName">Pulire Meglio</div>
+            <div class="brandTag">Metodi sicuri, senza danni</div>
           </div>
+        </a>
+
+        <div class="badge" title="Versione in miglioramento">
+          <span class="badgeDot"></span> Beta
         </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="hero">
+        <h1>Trova il metodo giusto per pulire</h1>
+        <p class="sub">
+          Scrivi cosa devi pulire o carica una foto. Ti restituiamo un metodo chiaro, prudente e adatto al materiale.
+        </p>
 
         <div class="checks">
           <div class="check"><span class="checkIcon">✔</span>Procedura chiara</div>
           <div class="check"><span class="checkIcon">✔</span>Errori da evitare</div>
           <div class="check"><span class="checkIcon">✔</span>Metodo prudente</div>
         </div>
-      </div>
+      </section>
 
-      <div class="card">
+      <section class="card">
         <div class="grid">
           <div>
             <label for="q">Cosa devi pulire</label>
@@ -281,14 +351,24 @@
             <div id="status" class="status"></div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div id="answer" class="answer"></div>
+      <section id="answer" class="answer"></section>
 
       <div class="footer">
         Versione beta: stiamo migliorando il servizio. Se qualcosa non torna, prova a riscrivere la richiesta in modo più semplice.
       </div>
-    </div>
+    </main>
+
+    <script>
+      // Home link: su SPA/one page, assicura scroll top
+      const homeLink = document.getElementById("homeLink");
+      homeLink?.addEventListener("click", (e) => {
+        // lascia comunque il link a "/" per coerenza
+        // ma facciamo anche scroll top immediato
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
 
     <script src="./app.js"></script>
   </body>
