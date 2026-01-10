@@ -5,11 +5,6 @@ export const config = {
 import OpenAI from "openai";
 import crypto from "crypto";
 
-const DEV_MODE =
-  process.env.VERCEL_ENV === "development" ||
-  process.env.VERCEL_ENV === "preview" ||
-  process.env.DEV_MODE === "true";
-
 function safeJsonParse(s) {
   try {
     return JSON.parse(s);
@@ -27,7 +22,6 @@ function getClientIp(req) {
 }
 
 /* RATE LIMIT */
-
 const RATE_LIMIT_MAX = 6;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const rateState = { byIp: new Map() };
@@ -48,8 +42,7 @@ function checkRateLimit(ip) {
   return { ok: true, retryAfterMs: 0 };
 }
 
-/* SIMPLE CACHE (text only) */
-
+/* CACHE */
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const cache = new Map();
 
@@ -73,7 +66,6 @@ function cacheSet(key, value) {
 }
 
 /* DOMAIN GUARD */
-
 function isCleaningRelated(text) {
   if (!text) return false;
   const t = text.toLowerCase();
@@ -112,8 +104,7 @@ function isCleaningRelated(text) {
   return hasIntent || hasProblemOrSurface;
 }
 
-/* CHECKLIST ANTI FOLLOW UP */
-
+/* CHECKLIST + FOLLOWUP */
 const SURFACE_HINTS = [
   "vetro", "acciaio", "ceramica", "marmo", "granito", "parquet", "legno",
   "tessuto", "cotone", "lana", "seta", "pelle", "camoscio", "plastica",
@@ -188,8 +179,6 @@ function buildFollowUpQuestion(text) {
   return null;
 }
 
-/* FOLLOW UP OPTIONS */
-
 function uniqMax(arr, max = 6) {
   const out = [];
   const seen = new Set();
@@ -216,118 +205,13 @@ function suggestOptionsFromContext(question, userText) {
   const mentionsTextile =
     containsAny(u, TEXTILE_OBJECT_HINTS) || u.includes("tessuto") || u.includes("cotone") || u.includes("lana") || u.includes("seta");
 
-  if (isSurfaceQ) {
-    return uniqMax(["Vetro", "Tessuto", "Legno", "Acciaio", "Pietra", "Plastica"], 6);
-  }
-
-  if (isStainTypeQ && mentionsTextile) {
-    return uniqMax(["Caffè", "Vino", "Olio o grasso", "Trucco", "Erba o fango", "Non lo so"], 6);
-  }
-
-  if (isStainTypeQ) {
-    return uniqMax(["Caffè", "Vino", "Olio o grasso", "Inchiostro", "Erba o fango", "Non lo so"], 6);
-  }
-
-  if (isProblemQ) {
-    return uniqMax(["Calcare", "Grasso", "Muffa", "Odore", "Macchia", "Non lo so"], 6);
-  }
+  if (isSurfaceQ) return uniqMax(["Vetro", "Tessuto", "Legno", "Acciaio", "Pietra", "Plastica"], 6);
+  if (isStainTypeQ && mentionsTextile) return uniqMax(["Caffè", "Vino", "Olio o grasso", "Trucco", "Erba o fango", "Non lo so"], 6);
+  if (isStainTypeQ) return uniqMax(["Caffè", "Vino", "Olio o grasso", "Inchiostro", "Erba o fango", "Non lo so"], 6);
+  if (isProblemQ) return uniqMax(["Calcare", "Grasso", "Muffa", "Odore", "Macchia", "Non lo so"], 6);
 
   return uniqMax(["Leggero", "Medio", "Forte", "Vecchio", "Recente", "Non lo so"], 6);
 }
-
-/* OUTPUT POLICY */
-
-function clampArray(arr, maxItems) {
-  if (!Array.isArray(arr)) return [];
-  return arr.slice(0, Math.max(0, maxItems));
-}
-
-function normalizeString(s, fallback) {
-  const out = typeof s === "string" ? s.trim() : "";
-  return out.length ? out : (fallback || "");
-}
-
-function clampText(s, maxChars) {
-  const t = normalizeString(s, "");
-  if (!maxChars || t.length <= maxChars) return t;
-  return t.slice(0, maxChars - 1).trimEnd() + "…";
-}
-
-function ensureNonEmptyList(list, fallbackItems) {
-  if (Array.isArray(list) && list.length) return list;
-  return Array.isArray(fallbackItems) ? fallbackItems : [];
-}
-
-function enforceOutputPolicy(parsed) {
-  const risk = normalizeString(parsed.risk, "Basso");
-  const difficulty = normalizeString(parsed.difficulty, "Facile");
-
-  const limitsByRisk = {
-    Basso: { stepsMax: 6, mistakesMax: 5, needsMax: 6, whenNotMax: 2, summaryChars: 260 },
-    Medio: { stepsMax: 9, mistakesMax: 6, needsMax: 7, whenNotMax: 3, summaryChars: 320 },
-    Alto: { stepsMax: 12, mistakesMax: 7, needsMax: 8, whenNotMax: 5, summaryChars: 420 }
-  };
-
-  const cfg = limitsByRisk[risk] || limitsByRisk.Basso;
-
-  parsed.title = normalizeString(parsed.title, "Soluzione di pulizia");
-  parsed.summary = clampText(parsed.summary, cfg.summaryChars);
-
-  parsed.time = normalizeString(parsed.time, "Variabile");
-  parsed.quick_alternative = clampText(parsed.quick_alternative, 260);
-
-  parsed.what_you_need = clampArray(parsed.what_you_need, cfg.needsMax);
-  parsed.steps = clampArray(parsed.steps, cfg.stepsMax);
-  parsed.mistakes = clampArray(parsed.mistakes, cfg.mistakesMax);
-  parsed.when_not_to_do = clampArray(parsed.when_not_to_do, cfg.whenNotMax);
-
-  const defaultNeeds = [
-    "Panno in microfibra o spugna non abrasiva",
-    "Acqua tiepida",
-    "Guanti (se usi detergenti)",
-    "Detergente delicato oppure sapone neutro"
-  ];
-
-  const defaultMistakes = [
-    "Non usare abrasivi su superfici delicate",
-    "Non mescolare prodotti chimici tra loro",
-    "Fai sempre una prova in un punto nascosto"
-  ];
-
-  parsed.what_you_need = ensureNonEmptyList(parsed.what_you_need, defaultNeeds);
-  parsed.mistakes = ensureNonEmptyList(parsed.mistakes, defaultMistakes);
-
-  if (!Array.isArray(parsed.steps) || parsed.steps.length === 0) {
-    parsed.steps = [
-      "Rimuovi lo sporco superficiale con un panno umido",
-      "Applica un detergente delicato e lascia agire pochi minuti",
-      "Strofina con una spugna non abrasiva",
-      "Risciacqua e asciuga bene"
-    ];
-  }
-
-  if (risk === "Alto") {
-    parsed.when_not_to_do = ensureNonEmptyList(parsed.when_not_to_do, [
-      "Se non sei sicuro del materiale o della finitura",
-      "Se la superficie è delicata e rischi scolorimento o opacizzazione",
-      "Se servono solventi forti senza adeguata ventilazione"
-    ]);
-  }
-
-  if (risk === "Basso" && difficulty === "Facile") {
-    parsed.when_not_to_do = clampArray(parsed.when_not_to_do, 1);
-  }
-
-  if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
-  if (parsed.follow_up_questions.length > 1) parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
-
-  if (!Array.isArray(parsed.follow_up_options)) parsed.follow_up_options = [];
-  parsed.follow_up_options = clampArray(parsed.follow_up_options, 6);
-
-  return parsed;
-}
-
-/* PAYLOADS */
 
 function buildNotSupportedPayload() {
   return {
@@ -364,7 +248,29 @@ function buildAutoFollowUpPayload(question, userText) {
   };
 }
 
-/* MAIN HANDLER */
+function openAiErrorToJson(err) {
+  const out = {
+    name: err?.name,
+    message: err?.message,
+  };
+
+  const status = err?.status || err?.response?.status;
+  if (status) out.status = status;
+
+  const code = err?.code;
+  if (code) out.code = code;
+
+  const type = err?.type;
+  if (type) out.type = type;
+
+  const reqId = err?.request_id || err?.requestId;
+  if (reqId) out.openai_request_id = reqId;
+
+  const data = err?.response?.data;
+  if (data) out.response_data = data;
+
+  return out;
+}
 
 export default async function handler(req, res) {
   const requestId = `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -376,7 +282,6 @@ export default async function handler(req, res) {
 
   const ip = getClientIp(req);
   const rl = checkRateLimit(ip);
-
   if (!rl.ok) {
     const retryAfterSeconds = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     res.setHeader("Retry-After", String(retryAfterSeconds));
@@ -402,15 +307,6 @@ export default async function handler(req, res) {
     const userText = (text || "").trim();
     const isFollowUp = followup === true;
     const hasImage = Boolean(image_data_url);
-
-    if (hasImage && typeof image_data_url === "string" && image_data_url.length > 2_500_000) {
-      res.status(413).json({
-        error: "image_too_large",
-        message: "Immagine troppo grande. Carica una foto più leggera.",
-        request_id: requestId
-      });
-      return;
-    }
 
     if (userText && !isCleaningRelated(userText) && !hasImage) {
       res.status(200).json(buildNotSupportedPayload());
@@ -466,34 +362,18 @@ export default async function handler(req, res) {
       ]
     };
 
-    const outputRules = [
-      "Regole di output adattivo",
-      "Se risk è Basso usa massimo 6 steps e una summary breve",
-      "Se risk è Medio usa massimo 9 steps",
-      "Se risk è Alto usa massimo 12 steps e aggiungi quando_not_to_do più completo",
-      "Non essere prolisso, vai operativo",
-      "Evita ripetizioni",
-      "Se fai una domanda di follow up, aggiungi follow_up_options con 4 o 6 opzioni semplici"
-    ].join("\n");
-
     const systemRules = [
       "Sei un assistente esperto di pulizia e manutenzione pratica.",
       "Ambiti: casa, esterni e giardinaggio, vestiti e tessuti, auto e attrezzi.",
       "Rispondi SOLO a richieste di pulizia, rimozione macchie o residui, odori, muffe, incrostazioni e manutenzione simile.",
       "",
       "Regola anti domande",
-      "Non fare follow up in modo perfezionista",
-      "Se puoi procedere con assunzioni prudenti, fai direttamente la soluzione completa e dichiara l'assunzione in una riga",
-      "Massimo 1 follow up, e solo se indispensabile per evitare danni",
-      "",
-      "Regola di chiusura",
-      "Se followup=true, non fare altre domande, follow_up_questions deve essere []",
+      "Massimo 1 follow up e solo se indispensabile",
+      "Se followup=true non fare altre domande, follow_up_questions deve essere []",
       "",
       "Sicurezza",
       "Non suggerire miscele pericolose come candeggina con ammoniaca o acidi",
-      "Consiglia test in un punto nascosto su tessuti e superfici delicate",
-      "",
-      outputRules
+      "Consiglia test in un punto nascosto su tessuti e superfici delicate"
     ].join("\n");
 
     const inputParts = [{ type: "input_text", text: systemRules }];
@@ -502,10 +382,7 @@ export default async function handler(req, res) {
 
     if (hasImage) {
       inputParts.push({ type: "input_image", image_url: image_data_url, detail: "auto" });
-      inputParts.push({
-        type: "input_text",
-        text: "Analizza la foto solo in ottica di pulizia. Se non è chiaro, scegli il metodo più prudente e dichiaralo."
-      });
+      inputParts.push({ type: "input_text", text: "Analizza la foto solo in ottica di pulizia. Se non è chiaro, scegli il metodo più prudente." });
     }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -536,38 +413,25 @@ export default async function handler(req, res) {
     if (isFollowUp) {
       parsed.follow_up_questions = [];
       parsed.follow_up_options = [];
-    } else {
-      if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
-      if (parsed.follow_up_questions.length > 1) parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
-
-      const shouldAllowFollowUp = hasImage;
-      if (!shouldAllowFollowUp) {
-        parsed.follow_up_questions = [];
-        parsed.follow_up_options = [];
-      } else {
-        if (!Array.isArray(parsed.follow_up_options)) parsed.follow_up_options = [];
-        if (parsed.follow_up_questions.length === 1 && parsed.follow_up_options.length === 0) {
-          parsed.follow_up_options = suggestOptionsFromContext(parsed.follow_up_questions[0], userText);
-        }
-      }
     }
-
-    const finalOut = enforceOutputPolicy(parsed);
 
     if (!isFollowUp && userText && !hasImage) {
       const key = cacheKeyFor(userText);
-      cacheSet(key, finalOut);
+      cacheSet(key, parsed);
     }
 
-    res.status(200).json(finalOut);
+    res.status(200).json(parsed);
   } catch (err) {
     console.error("solve_error", requestId, err);
+
+    const openaiErr = openAiErrorToJson(err);
+    const safeDetail = JSON.stringify(openaiErr).slice(0, 2000);
 
     res.status(500).json({
       error: "function_failed",
       message: "Errore interno della funzione.",
       request_id: requestId,
-      detail: DEV_MODE ? (err && err.message ? err.message : String(err)) : undefined
+      detail: safeDetail
     });
   }
 }
