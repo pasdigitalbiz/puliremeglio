@@ -65,7 +65,7 @@ function isNotSupportedResponse(data) {
   const t = (data.title || "").toLowerCase();
   if (t.includes("richiesta non supportata")) return true;
   const s = (data.summary || "").toLowerCase();
-  if (s.includes("solo a problemi di pulizia")) return true;
+  if (s.includes("solo a richieste di pulizia") || s.includes("risponde solo")) return true;
   return false;
 }
 
@@ -76,7 +76,7 @@ function renderNotSupportedBox(data) {
 
   const summary = escapeHtml(
     data.summary ||
-      "Questo strumento risponde solo a problemi di pulizia domestica, superfici e macchie."
+      "Questo strumento risponde solo a problemi di pulizia, macchie, odori e manutenzione."
   );
 
   const hint = escapeHtml(
@@ -123,6 +123,75 @@ function renderNotSupportedBox(data) {
   `;
 }
 
+async function readResponseBody(res) {
+  try {
+    const ct = res.headers.get("content-type") || "";
+    if (ct.includes("application/json")) {
+      const j = await res.json();
+      return JSON.stringify(j, null, 2);
+    }
+    return await res.text();
+  } catch {
+    return "";
+  }
+}
+
+async function sendFollowUp(question, extra, ui) {
+  const { btn, statusEl } = ui;
+
+  btn.disabled = true;
+  statusEl.textContent = "Aggiorno la soluzione...";
+
+  const context = [
+    "Richiesta iniziale:",
+    lastUserText,
+    "",
+    "Domanda di chiarimento:",
+    question,
+    "",
+    "Risposta utente:",
+    extra
+  ].join("\n");
+
+  try {
+    const res = await fetch("/api/solve", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        text: context,
+        image_data_url: lastImageDataUrl,
+        followup: true
+      })
+    });
+
+    if (res.status === 429) {
+      let seconds = 30;
+      try {
+        const payload = await res.json();
+        if (payload && typeof payload.retry_after_seconds === "number") seconds = payload.retry_after_seconds;
+      } catch {}
+      startCooldown(seconds);
+      return;
+    }
+
+    if (!res.ok) {
+      const body = await readResponseBody(res);
+      statusEl.textContent = `Errore API (${res.status}). ${body ? "Dettaglio: " + body : ""}`;
+      return;
+    }
+
+    const data = await res.json();
+    lastAssistantData = data;
+    renderAnswer(data);
+    startCooldown(6);
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = "Errore di rete o deploy. Controlla Vercel Logs.";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 function renderClarification(data) {
   els.answer.style.display = "block";
   els.ansTitle.textContent = "Mi serve un dettaglio in più";
@@ -133,8 +202,36 @@ function renderClarification(data) {
       ? data.follow_up_questions[0]
       : "Puoi aggiungere un dettaglio in più?";
 
+  const options = Array.isArray(data.follow_up_options) ? data.follow_up_options.slice(0, 6) : [];
+
   const genericPlaceholder = "Scrivi qui la tua risposta (una frase breve).";
   const hintLine = `Rispondi alla domanda: “${escapeHtml(question)}”`;
+
+  const pillsHtml = options.length
+    ? `
+      <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:10px;">
+        ${options
+          .map(
+            opt => `
+              <button type="button" data-opt="${escapeHtml(opt)}" class="pillBtn" style="
+                border:1px solid #cbd5e1;
+                background:#ffffff;
+                color:#0f172a;
+                border-radius:999px;
+                padding:8px 12px;
+                cursor:pointer;
+                font-weight:700;
+                font-size:14px;
+              ">${escapeHtml(opt)}</button>
+            `
+          )
+          .join("")}
+      </div>
+      <div style="margin-top:8px; font-size:13px; color:#64748b;">
+        Puoi cliccare un’opzione: invio automatico.
+      </div>
+    `
+    : "";
 
   els.ansBody.innerHTML = `
     <div style="margin-bottom:14px">
@@ -152,7 +249,10 @@ function renderClarification(data) {
         ${hintLine}
       </div>
 
+      ${pillsHtml}
+
       <textarea id="clarifyText" rows="3" style="
+        margin-top:12px;
         width:100%;
         max-width:100%;
         box-sizing:border-box;
@@ -187,61 +287,27 @@ function renderClarification(data) {
   const ta = document.getElementById("clarifyText");
   const st = document.getElementById("clarifyStatus");
 
+  const ui = { btn, statusEl: st };
+
   btn.addEventListener("click", async () => {
     const extra = (ta.value || "").trim();
     if (!extra) {
-      st.textContent = "Scrivi una risposta breve.";
+      st.textContent = "Scrivi una risposta breve oppure clicca un’opzione.";
       return;
     }
-
-    btn.disabled = true;
-    st.textContent = "Aggiorno la soluzione...";
-
-    const context = [
-      "Richiesta iniziale:",
-      lastUserText,
-      "",
-      "Domanda di chiarimento:",
-      question,
-      "",
-      "Nuove informazioni:",
-      extra
-    ].join("\n");
-
-    try {
-      const res = await fetch("/api/solve", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          text: context,
-          image_data_url: lastImageDataUrl,
-          followup: true
-        })
-      });
-
-      if (res.status === 429) {
-        let seconds = 30;
-        try {
-          const payload = await res.json();
-          if (payload && typeof payload.retry_after_seconds === "number") seconds = payload.retry_after_seconds;
-        } catch {}
-        startCooldown(seconds);
-        return;
-      }
-
-      if (!res.ok) throw new Error("Errore");
-
-      const data = await res.json();
-      lastAssistantData = data;
-      renderAnswer(data);
-      startCooldown(10);
-    } catch (e) {
-      console.error(e);
-      st.textContent = "Errore durante l’aggiornamento. Riprova.";
-    } finally {
-      btn.disabled = false;
-    }
+    await sendFollowUp(question, extra, ui);
   });
+
+  const pillButtons = Array.from(document.querySelectorAll(".pillBtn"));
+  for (const pb of pillButtons) {
+    pb.addEventListener("click", async () => {
+      const opt = pb.getAttribute("data-opt") || "";
+      const extra = opt.trim();
+      if (!extra) return;
+      ta.value = extra;
+      await sendFollowUp(question, extra, ui);
+    });
+  }
 }
 
 function renderAnswer(data) {
@@ -269,12 +335,13 @@ function renderAnswer(data) {
   els.ansMeta.textContent = metaBits.join(" | ");
 
   els.ansBody.innerHTML = `
-    <div style="margin-bottom:12px;"><b>In breve</b><div style="margin-top:6px;">${escapeHtml(data.summary || "")}</div></div>
+    <div style="margin-bottom:12px;">
+      <b>In breve</b>
+      <div style="margin-top:6px;">${escapeHtml(data.summary || "")}</div>
+    </div>
 
     <div style="margin-top:16px;"><b>Cosa serve</b>${toList(data.what_you_need, false)}</div>
-
     <div style="margin-top:16px;"><b>Procedura passo passo</b>${toList(data.steps, true)}</div>
-
     <div style="margin-top:16px;"><b>Errori da evitare</b>${toList(data.mistakes, false)}</div>
 
     ${
@@ -295,7 +362,10 @@ function renderAnswer(data) {
         : ""
     }
 
-    <div style="margin-top:16px;"><b>Alternativa rapida</b><div style="margin-top:6px;">${escapeHtml(data.quick_alternative || "Non disponibile.")}</div></div>
+    <div style="margin-top:16px;">
+      <b>Alternativa rapida</b>
+      <div style="margin-top:6px;">${escapeHtml(data.quick_alternative || "Non disponibile.")}</div>
+    </div>
   `;
 }
 
@@ -381,18 +451,20 @@ els.btnSolve.addEventListener("click", async () => {
     }
 
     if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || `HTTP ${res.status}`);
+      const body = await readResponseBody(res);
+      setStatus(`Errore API (${res.status}). ${body ? "Dettaglio: " + body : ""}`);
+      els.btnSolve.disabled = false;
+      return;
     }
 
     const data = await res.json();
     lastAssistantData = data;
     renderAnswer(data);
     setStatus("");
-    startCooldown(8);
+    startCooldown(6);
   } catch (e) {
     console.error(e);
-    setStatus("Errore. Riprova tra poco.");
+    setStatus("Errore di rete o deploy. Controlla Vercel Logs.");
     els.btnSolve.disabled = false;
   }
 });
