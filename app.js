@@ -47,13 +47,20 @@ function isFollowUpResponse(data) {
   return Array.isArray(data?.follow_up_questions) && data.follow_up_questions.length > 0;
 }
 
+function prettifyOptionLabel(opt) {
+  const clean = String(opt || "").trim();
+  if (clean.toLowerCase() === "non lo so") return "Non sono sicuro";
+  return clean;
+}
+
 function renderFollowUp(data) {
   const question = data.follow_up_questions[0] || "Mi serve un dettaglio in più.";
   const options = Array.isArray(data.follow_up_options) ? data.follow_up_options : [];
 
   const optionsHtml = options
-    .map(
-      (opt, idx) => `
+    .map(opt => {
+      const display = prettifyOptionLabel(opt);
+      return `
         <button
           type="button"
           data-opt="${escapeHtml(opt)}"
@@ -66,14 +73,14 @@ function renderFollowUp(data) {
             font-weight:800;
             cursor:pointer;
           "
-        >${escapeHtml(opt)}</button>
-      `
-    )
+        >${escapeHtml(display)}</button>
+      `;
+    })
     .join("");
 
   showBox(`
     <div class="answerHead" style="margin-bottom:12px;">
-      <h2 class="answerTitle" style="margin:0; font-size:28px; letter-spacing:-0.02em;">Mi serve un dettaglio in più</h2>
+      <h2 class="answerTitle" style="margin:0; font-size:28px; letter-spacing:-0.02em;">Mi serve solo una cosa</h2>
       <div class="answerMeta" style="margin-top:6px; color:#64748b; font-size:14px;">
         Rispondi e ti do subito il metodo giusto.
       </div>
@@ -87,7 +94,7 @@ function renderFollowUp(data) {
     ${
       options.length
         ? `
-      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 14px;">
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 10px;">
         ${optionsHtml}
       </div>
       <div style="color:#64748b; font-size:13px; margin-bottom:14px;">
@@ -118,27 +125,13 @@ function renderFollowUp(data) {
         background:#ffffff;
       " placeholder="Scrivi qui una risposta breve"></textarea>
 
-      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
-        <button id="btnFollowUp" type="button" class="btn" style="max-width:240px;">
-          Continua
-        </button>
+      <div style="color:#64748b; font-size:13px; margin-top:10px;">
+        Premi Invio per continuare. Shift+Invio per andare a capo.
       </div>
     </div>
   `);
 
   const followUpTextEl = document.getElementById("followUpText");
-  const btnFollowUp = document.getElementById("btnFollowUp");
-
-  function wireOptionButtons() {
-    const buttons = Array.from(answerBox.querySelectorAll("button[data-opt]"));
-    buttons.forEach(b => {
-      b.addEventListener("click", async () => {
-        const opt = b.getAttribute("data-opt") || "";
-        followUpTextEl.value = opt;
-        await submitFollowUp(opt);
-      });
-    });
-  }
 
   async function submitFollowUp(userAnswer) {
     const answer = (userAnswer || "").trim();
@@ -146,7 +139,6 @@ function renderFollowUp(data) {
 
     setStatus("Sto preparando la soluzione…");
     btnSolve.disabled = true;
-    btnFollowUp.disabled = true;
 
     try {
       const merged = `${pendingBaseText}\n\nDettaglio aggiuntivo: ${answer}`;
@@ -157,15 +149,26 @@ function renderFollowUp(data) {
       setStatus("Errore nel generare la soluzione. Riprova.");
     } finally {
       btnSolve.disabled = false;
-      btnFollowUp.disabled = false;
     }
   }
 
-  btnFollowUp.addEventListener("click", async () => {
-    await submitFollowUp(followUpTextEl.value);
+  const buttons = Array.from(answerBox.querySelectorAll("button[data-opt]"));
+  buttons.forEach(b => {
+    b.addEventListener("click", async () => {
+      const opt = b.getAttribute("data-opt") || "";
+      followUpTextEl.value = prettifyOptionLabel(opt);
+      await submitFollowUp(opt);
+    });
   });
 
-  wireOptionButtons();
+  followUpTextEl.addEventListener("keydown", async e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      await submitFollowUp(followUpTextEl.value);
+    }
+  });
+
+  followUpTextEl.focus();
 }
 
 function renderSolution(data) {
@@ -176,7 +179,12 @@ function renderSolution(data) {
   const time = data?.time ? escapeHtml(data.time) : "";
   const risk = data?.risk ? escapeHtml(data.risk) : "";
 
-  const metaParts = [difficulty && `Difficoltà: ${difficulty}`, time && `Tempo: ${time}`, risk && `Rischio: ${risk}`].filter(Boolean);
+  const metaParts = [
+    difficulty && `Difficoltà: ${difficulty}`,
+    time && `Tempo: ${time}`,
+    risk && `Rischio: ${risk}`
+  ].filter(Boolean);
+
   const meta = metaParts.length ? metaParts.join(" | ") : "";
 
   const steps = Array.isArray(data?.steps) ? data.steps : [];
@@ -187,22 +195,30 @@ function renderSolution(data) {
 
   const needHtml =
     need.length
-      ? `<h3 style="margin-top:18px;">Cosa serve</h3><ul>${need.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+      ? `<h3 style="margin-top:18px;">Cosa serve</h3><ul>${need
+          .map(x => `<li>${escapeHtml(x)}</li>`)
+          .join("")}</ul>`
       : "";
 
   const stepsHtml =
     steps.length
-      ? `<h3 style="margin-top:18px;">Procedura</h3><ol>${steps.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ol>`
+      ? `<h3 style="margin-top:18px;">Procedura</h3><ol>${steps
+          .map(x => `<li>${escapeHtml(x)}</li>`)
+          .join("")}</ol>`
       : "";
 
   const mistakesHtml =
     mistakes.length
-      ? `<h3 style="margin-top:18px;">Errori da evitare</h3><ul>${mistakes.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+      ? `<h3 style="margin-top:18px;">Errori da evitare</h3><ul>${mistakes
+          .map(x => `<li>${escapeHtml(x)}</li>`)
+          .join("")}</ul>`
       : "";
 
   const whenNotHtml =
     whenNot.length
-      ? `<h3 style="margin-top:18px;">Quando non farlo</h3><ul>${whenNot.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+      ? `<h3 style="margin-top:18px;">Quando non farlo</h3><ul>${whenNot
+          .map(x => `<li>${escapeHtml(x)}</li>`)
+          .join("")}</ul>`
       : "";
 
   const quickHtml =
@@ -213,10 +229,20 @@ function renderSolution(data) {
   showBox(`
     <div class="answerHead" style="margin-bottom:12px;">
       <h2 class="answerTitle" style="margin:0; font-size:28px; letter-spacing:-0.02em;">${title}</h2>
-      ${meta ? `<div class="answerMeta" style="margin-top:6px; color:#64748b; font-size:14px;">${escapeHtml(meta)}</div>` : ""}
+      ${
+        meta
+          ? `<div class="answerMeta" style="margin-top:6px; color:#64748b; font-size:14px;">${escapeHtml(
+              meta
+            )}</div>`
+          : ""
+      }
     </div>
 
-    ${summary ? `<p style="font-size:16px; line-height:1.6; margin:0 0 8px;"><strong>${summary}</strong></p>` : ""}
+    ${
+      summary
+        ? `<p style="font-size:16px; line-height:1.6; margin:0 0 8px;"><strong>${summary}</strong></p>`
+        : ""
+    }
 
     <div style="font-size:16px; line-height:1.65;">
       ${needHtml}
