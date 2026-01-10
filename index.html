@@ -21,6 +21,8 @@
         --brandDark: #0b5f59;
         --brandSoft: #e7f6f4;
 
+        --ok: #16a34a;
+
         --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         --shadowSoft: 0 10px 22px rgba(15, 23, 42, 0.06);
         --radius: 18px;
@@ -30,15 +32,10 @@
         box-sizing: border-box;
       }
 
-      html,
-      body {
-        height: 100%;
-      }
-
       body {
         margin: 0;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+          Arial;
         color: var(--text);
         background: radial-gradient(1200px 600px at 20% 0%, #eef7ff 0%, var(--bg) 55%)
           no-repeat;
@@ -50,20 +47,22 @@
         padding: 42px 18px 70px;
       }
 
+      /* HERO */
+
       .hero {
-        margin: 10px 0 26px;
+        margin-bottom: 26px;
       }
 
       .brandRow {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
         margin-bottom: 14px;
       }
 
       .logo {
-        width: 46px;
-        height: 46px;
+        width: 44px;
+        height: 44px;
         border-radius: 14px;
         background: linear-gradient(135deg, var(--brand) 0%, #22c55e 140%);
         box-shadow: var(--shadowSoft);
@@ -71,7 +70,7 @@
 
       h1 {
         margin: 0;
-        font-size: 44px;
+        font-size: 42px;
         letter-spacing: -0.02em;
         line-height: 1.05;
       }
@@ -80,9 +79,36 @@
         margin: 10px 0 0;
         font-size: 18px;
         color: var(--muted);
-        max-width: 62ch;
-        line-height: 1.5;
+        max-width: 60ch;
       }
+
+      .checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .check {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .checkIcon {
+        color: var(--ok);
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      /* CARD */
 
       .card {
         background: var(--card);
@@ -90,20 +116,6 @@
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: 20px;
-      }
-
-      .cardHeader {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 14px;
-      }
-
-      .cardTitle {
-        margin: 0;
-        font-size: 20px;
-        letter-spacing: -0.01em;
       }
 
       .grid {
@@ -114,7 +126,7 @@
 
       @media (max-width: 860px) {
         h1 {
-          font-size: 36px;
+          font-size: 34px;
         }
         .grid {
           grid-template-columns: 1fr;
@@ -131,19 +143,17 @@
       textarea {
         width: 100%;
         min-height: 120px;
-        padding: 14px 14px;
+        padding: 14px;
         border-radius: 14px;
         border: 1px solid var(--border);
-        outline: none;
         font-size: 16px;
-        line-height: 1.5;
-        background: #ffffff;
         resize: vertical;
       }
 
       textarea:focus {
         border-color: rgba(15, 118, 110, 0.45);
         box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        outline: none;
       }
 
       .help {
@@ -153,22 +163,18 @@
         background: #f8fafc;
         border: 1px solid var(--border);
         color: var(--muted);
-        line-height: 1.5;
       }
 
       .examples {
         margin-top: 8px;
         font-size: 14px;
         color: #6b7280;
-        line-height: 1.5;
       }
 
       .rightCol {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        align-items: stretch;
-        justify-content: flex-start;
       }
 
       .fileBox {
@@ -178,119 +184,36 @@
         background: #ffffff;
       }
 
-      .fileRow {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .fileMeta {
-        font-size: 13px;
-        color: var(--muted);
-      }
-
       .btn {
-        width: 100%;
         height: 52px;
         border: none;
         border-radius: 16px;
         cursor: pointer;
         font-weight: 900;
         font-size: 16px;
-        letter-spacing: -0.01em;
         color: #ffffff;
         background: linear-gradient(135deg, var(--brand) 0%, #0ea5a4 140%);
         box-shadow: 0 14px 28px rgba(15, 118, 110, 0.22);
-        transition: transform 0.08s ease, box-shadow 0.12s ease;
       }
 
       .btn:hover {
-        transform: translateY(-1px);
         box-shadow: 0 18px 36px rgba(15, 118, 110, 0.26);
-      }
-
-      .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
       }
 
       .status {
         min-height: 18px;
         font-size: 14px;
         color: var(--muted);
-        padding-left: 2px;
-      }
-
-      .answerWrap {
-        margin-top: 18px;
       }
 
       .answer {
         display: none;
+        margin-top: 18px;
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: 20px;
-      }
-
-      .answerHead {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: 12px;
-      }
-
-      .answerTitle {
-        margin: 0;
-        font-size: 28px;
-        letter-spacing: -0.02em;
-      }
-
-      .answerMeta {
-        color: var(--muted);
-        font-size: 14px;
-      }
-
-      .answerBody {
-        color: var(--text);
-        line-height: 1.6;
-      }
-
-      .footerNote {
-        margin-top: 16px;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: #ffffff;
-        color: var(--text);
-        font-weight: 800;
-        font-size: 14px;
-      }
-
-      .pillDot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        background: var(--brand);
-        opacity: 0.9;
-      }
-
-      .topHintRow {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 14px;
       }
     </style>
   </head>
@@ -299,29 +222,23 @@
     <div class="wrap">
       <div class="hero">
         <div class="brandRow">
-          <div class="logo" aria-hidden="true"></div>
+          <div class="logo"></div>
           <div>
-            <h1>Pulire meglio, senza rovinare nulla</h1>
+            <h1>Come pulire nel modo giusto</h1>
             <p class="sub">
-              Consigli pratici e sicuri per casa, vestiti, esterni e auto.
+              Consigli pratici e sicuri per pulire senza fare danni.
             </p>
           </div>
         </div>
 
-        <div class="topHintRow" aria-hidden="true">
-          <span class="pill"><span class="pillDot"></span>Procedura chiara</span>
-          <span class="pill"><span class="pillDot"></span>Errori da evitare</span>
-          <span class="pill"><span class="pillDot"></span>Metodo prudente</span>
+        <div class="checks">
+          <div class="check"><span class="checkIcon">✔</span>Procedura chiara</div>
+          <div class="check"><span class="checkIcon">✔</span>Errori da evitare</div>
+          <div class="check"><span class="checkIcon">✔</span>Metodo prudente</div>
         </div>
       </div>
 
       <div class="card">
-        <div class="cardHeader">
-          <div>
-            <div class="cardTitle">Dimmi cosa devi pulire</div>
-          </div>
-        </div>
-
         <div class="grid">
           <div>
             <label for="q">Cosa devi pulire</label>
@@ -340,32 +257,17 @@
 
           <div class="rightCol">
             <div class="fileBox">
-              <label for="img" style="margin: 0 0 8px">Foto (opzionale)</label>
-              <div class="fileRow">
-                <input id="img" type="file" accept="image/*" />
-                <div id="imgMeta" class="fileMeta"></div>
-              </div>
+              <label for="img">Foto (opzionale)</label>
+              <input id="img" type="file" accept="image/*" />
             </div>
 
-            <button id="btnSolve" class="btn" type="button">Vai alla soluzione</button>
+            <button id="btnSolve" class="btn">Vai alla soluzione</button>
             <div id="status" class="status"></div>
           </div>
         </div>
       </div>
 
-      <div class="answerWrap">
-        <div id="answer" class="answer">
-          <div class="answerHead">
-            <h2 id="ansTitle" class="answerTitle"></h2>
-            <div id="ansMeta" class="answerMeta"></div>
-          </div>
-          <div id="ansBody" class="answerBody"></div>
-
-          <div class="footerNote">
-            Consiglio: prova sempre in un punto nascosto su superfici delicate.
-          </div>
-        </div>
-      </div>
+      <div id="answer" class="answer"></div>
     </div>
 
     <script src="./app.js"></script>
