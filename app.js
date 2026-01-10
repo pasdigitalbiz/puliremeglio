@@ -63,35 +63,33 @@ function startCooldown(seconds) {
 function renderClarification(data) {
   els.answer.style.display = "block";
   els.ansTitle.textContent = "Mi serve un dettaglio in più";
-
-  els.ansMeta.textContent =
-    "Per darti una procedura corretta devo prima chiarire questo punto.";
+  els.ansMeta.textContent = "Rispondi alla domanda per ottenere una soluzione completa.";
 
   els.ansBody.innerHTML = `
     <div style="margin-bottom:14px">
-      <b>Domande rapide</b>
+      <b>Domanda</b>
       ${toList(data.follow_up_questions, false)}
     </div>
 
     <div style="
       padding:12px;
-      border:1px solid #1e293b;
+      border:1px solid #e2e8f0;
       border-radius:12px;
-      background:#0b1220;
+      background:#f8fafc;
     ">
-      <div style="font-size:14px; color:#94a3b8; margin-bottom:8px">
-        Rispondi con una frase breve (esempio: “è vetro, calcare vecchio”)
+      <div style="font-size:14px; color:#64748b; margin-bottom:8px">
+        Rispondi con una frase breve.
       </div>
 
       <textarea id="clarifyText" rows="3" style="
         width:100%;
         padding:12px;
         border-radius:10px;
-        border:1px solid #1e293b;
-        background:#020617;
-        color:#e5e7eb;
+        border:1px solid #cbd5e1;
+        background:#ffffff;
+        color:#0f172a;
         outline:none;
-      "></textarea>
+      " placeholder="Esempio: è vetro, calcare vecchio"></textarea>
 
       <button id="clarifyBtn" type="button" style="
         margin-top:10px;
@@ -101,13 +99,14 @@ function renderClarification(data) {
         border:none;
         font-weight:800;
         cursor:pointer;
-        background: linear-gradient(90deg, #60a5fa, #22c55e);
-        color:#052e16;
+        background:#0f766e;
+        color:white;
+        box-shadow:0 6px 14px rgba(15,118,110,0.20);
       ">
         Aggiorna soluzione
       </button>
 
-      <div id="clarifyStatus" style="margin-top:8px; color:#94a3b8; font-size:14px"></div>
+      <div id="clarifyStatus" style="margin-top:8px; color:#64748b; font-size:14px"></div>
     </div>
   `;
 
@@ -149,7 +148,12 @@ function renderClarification(data) {
       });
 
       if (res.status === 429) {
-        startCooldown(30);
+        let seconds = 30;
+        try {
+          const payload = await res.json();
+          if (payload && typeof payload.retry_after_seconds === "number") seconds = payload.retry_after_seconds;
+        } catch {}
+        startCooldown(seconds);
         return;
       }
 
@@ -188,18 +192,30 @@ function renderAnswer(data) {
   els.ansMeta.textContent = metaBits.join(" | ");
 
   els.ansBody.innerHTML = `
-    <div><b>In breve</b><div style="margin-top:6px">${escapeHtml(data.summary)}</div></div>
-    <div style="margin-top:14px"><b>Cosa serve</b>${toList(data.what_you_need, false)}</div>
-    <div style="margin-top:14px"><b>Procedura passo passo</b>${toList(data.steps, true)}</div>
-    <div style="margin-top:14px"><b>Errori da evitare</b>${toList(data.mistakes, false)}</div>
+    <div style="margin-bottom:12px;"><b>In breve</b><div style="margin-top:6px;">${escapeHtml(data.summary || "")}</div></div>
+
+    <div style="margin-top:16px;"><b>Cosa serve</b>${toList(data.what_you_need, false)}</div>
+
+    <div style="margin-top:16px;"><b>Procedura passo passo</b>${toList(data.steps, true)}</div>
+
+    <div style="margin-top:16px;"><b>Errori da evitare</b>${toList(data.mistakes, false)}</div>
+
     ${
-      data.when_not_to_do.length
-        ? `<div style="margin-top:14px; padding:10px; border:1px solid #fca5a5; border-radius:10px; background:#fff1f2;">
-             <b>Quando non farlo</b>${toList(data.when_not_to_do, false)}
-           </div>`
+      Array.isArray(data.when_not_to_do) && data.when_not_to_do.length
+        ? `<div style="
+            margin-top:16px;
+            padding:12px;
+            border:1px solid #fecaca;
+            border-radius:12px;
+            background:#fff1f2;
+          ">
+            <b>Quando non farlo</b>
+            ${toList(data.when_not_to_do, false)}
+          </div>`
         : ""
     }
-    <div style="margin-top:14px"><b>Alternativa rapida</b><div style="margin-top:6px">${escapeHtml(data.quick_alternative)}</div></div>
+
+    <div style="margin-top:16px;"><b>Alternativa rapida</b><div style="margin-top:6px;">${escapeHtml(data.quick_alternative || "Non disponibile.")}</div></div>
   `;
 }
 
@@ -212,30 +228,46 @@ async function resizeToDataUrl(file) {
   });
 
   const maxSide = 1280;
-  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const w = img.width;
+  const h = img.height;
+  const scale = Math.min(1, maxSide / Math.max(w, h));
 
   const canvas = document.createElement("canvas");
-  canvas.width = img.width * scale;
-  canvas.height = img.height * scale;
-  canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+  canvas.width = Math.round(w * scale);
+  canvas.height = Math.round(h * scale);
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
 els.img.addEventListener("change", async () => {
-  const file = els.img.files[0];
+  const file = els.img && els.img.files ? els.img.files[0] : null;
   if (!file) return;
 
-  setStatus("Preparo la foto...");
-  lastImageDataUrl = await resizeToDataUrl(file);
-  els.imgMeta.textContent = "Foto pronta";
-  setStatus("");
+  try {
+    setStatus("Preparo la foto...");
+    lastImageDataUrl = await resizeToDataUrl(file);
+    els.imgMeta.textContent = "Foto pronta";
+    setStatus("");
+  } catch (e) {
+    console.error(e);
+    els.imgMeta.textContent = "Non riesco a leggere la foto. Prova un altro file.";
+    setStatus("");
+  }
 });
 
 els.btnSolve.addEventListener("click", async () => {
   const text = (els.q.value || "").trim();
   if (!text && !lastImageDataUrl) {
     setStatus("Scrivi una descrizione o carica una foto.");
+    return;
+  }
+
+  if (cooldownEndsAt > Date.now()) {
+    const left = Math.max(1, Math.ceil((cooldownEndsAt - Date.now()) / 1000));
+    setStatus(`Riprova tra ${left}s.`);
     return;
   }
 
@@ -252,15 +284,27 @@ els.btnSolve.addEventListener("click", async () => {
     });
 
     if (res.status === 429) {
-      startCooldown(60);
+      let seconds = 60;
+      try {
+        const payload = await res.json();
+        if (payload && typeof payload.retry_after_seconds === "number") seconds = payload.retry_after_seconds;
+      } catch {
+        const ra = res.headers.get("Retry-After");
+        if (ra) seconds = Number(ra) || seconds;
+      }
+      startCooldown(seconds);
       return;
     }
 
-    if (!res.ok) throw new Error("Errore");
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || `HTTP ${res.status}`);
+    }
 
     const data = await res.json();
     lastAssistantData = data;
     renderAnswer(data);
+    setStatus("");
     startCooldown(8);
   } catch (e) {
     console.error(e);
