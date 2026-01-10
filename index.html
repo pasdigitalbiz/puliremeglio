@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pulire Meglio</title>
   <meta name="description" content="Come pulire qualsiasi cosa in modo sicuro e semplice. Descrivi il problema o carica una foto." />
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { overflow-x: hidden; }
+  </style>
 </head>
 
 <body style="
-  margin:0;
   min-height:100vh;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
   background:#f8fafc;
@@ -21,7 +26,6 @@
     padding: 40px 16px 80px;
   ">
 
-    <!-- HEADER -->
     <header style="margin-bottom:32px;">
       <h1 style="
         font-size:42px;
@@ -37,18 +41,18 @@
         color:#475569;
         max-width:680px;
       ">
-        Descrivi cosa devi pulire o carica una foto.  
+        Descrivi cosa devi pulire o carica una foto.
         Ti diciamo <strong>come farlo in modo sicuro</strong>, senza rovinare nulla.
       </p>
     </header>
 
-    <!-- INPUT CARD -->
     <section style="
       background:#ffffff;
       border:1px solid #e2e8f0;
       border-radius:16px;
       padding:24px;
       box-shadow:0 10px 25px rgba(15,23,42,0.06);
+      max-width:100%;
     ">
 
       <label for="q" style="
@@ -66,6 +70,7 @@
         placeholder="Esempio: forno incrostato, calcare nel box doccia, macchia di vino sul tappeto"
         style="
           width:100%;
+          max-width:100%;
           padding:14px;
           border-radius:10px;
           border:1px solid #cbd5e1;
@@ -83,10 +88,10 @@
         margin-top:20px;
         flex-wrap:wrap;
         align-items:flex-end;
+        max-width:100%;
       ">
 
-        <!-- IMAGE -->
-        <div style="flex:1; min-width:240px;">
+        <div style="flex:1; min-width:240px; max-width:100%;">
           <label for="img" style="
             display:block;
             font-weight:600;
@@ -99,23 +104,25 @@
             id="img"
             type="file"
             accept="image/*"
-            style="color:#475569;"
+            style="color:#475569; max-width:100%;"
           />
 
           <div id="imgMeta" style="
             margin-top:6px;
             font-size:14px;
             color:#64748b;
+            max-width:100%;
+            overflow-wrap:anywhere;
           "></div>
         </div>
 
-        <!-- CTA -->
-        <div style="min-width:220px;">
+        <div style="min-width:220px; max-width:100%;">
           <button
             id="btnSolve"
             type="button"
             style="
               width:100%;
+              max-width:100%;
               height:46px;
               border-radius:12px;
               border:none;
@@ -134,19 +141,22 @@
             margin-top:8px;
             font-size:14px;
             color:#64748b;
+            max-width:100%;
+            overflow-wrap:anywhere;
           "></div>
         </div>
 
       </div>
     </section>
 
-    <!-- ANSWER -->
-    <section id="answer" style="display:none; margin-top:32px;">
+    <section id="answer" style="display:none; margin-top:32px; max-width:100%;">
 
       <h2 id="ansTitle" style="
         font-size:24px;
         margin-bottom:6px;
         color:#0f172a;
+        max-width:100%;
+        overflow-wrap:anywhere;
       ">
         Risposta
       </h2>
@@ -155,6 +165,8 @@
         font-size:14px;
         color:#64748b;
         margin-bottom:12px;
+        max-width:100%;
+        overflow-wrap:anywhere;
       "></div>
 
       <div id="ansBody" style="
@@ -164,19 +176,24 @@
         padding:24px;
         box-shadow:0 10px 25px rgba(15,23,42,0.06);
         line-height:1.55;
+        max-width:100%;
+        overflow:hidden;
+        overflow-wrap:anywhere;
+        word-break:break-word;
       "></div>
 
     </section>
 
-    <!-- FOOTER -->
     <footer style="
       margin-top:48px;
       padding-top:16px;
       border-top:1px solid #e2e8f0;
       font-size:13px;
       color:#64748b;
+      max-width:100%;
+      overflow-wrap:anywhere;
     ">
-      Risposte generate con AI.  
+      Risposte generate con AI.
       Testa sempre in un punto nascosto prima di applicare su superfici delicate.
     </footer>
 
