@@ -4,11 +4,12 @@ const statusEl = document.getElementById("status");
 const answerBox = document.getElementById("answer");
 
 let pendingBaseText = "";
+let cooldownTimer = null;
 
 const CLIENT_LIMIT = {
   maxRequests: 12,
   windowMs: 10 * 60 * 1000,
-  cooldownMs: 4500
+  cooldownMs: 1200
 };
 
 function nowMs() {
@@ -31,11 +32,6 @@ function setStatus(msg) {
 function showBox(html) {
   answerBox.innerHTML = html;
   answerBox.style.display = "block";
-}
-
-function hideBox() {
-  answerBox.style.display = "none";
-  answerBox.innerHTML = "";
 }
 
 function showNiceLoadingCard(label = "Sto preparando la soluzione") {
@@ -95,11 +91,48 @@ function showNiceNotice(title, text) {
       <div style="font-weight:900; font-size:16px; letter-spacing:-0.01em;">
         ${escapeHtml(title)}
       </div>
-      <div style="color:#64748b; margin-top:6px; font-size:14px; line-height:1.5;">
+      <div id="pmNoticeText" style="color:#64748b; margin-top:6px; font-size:14px; line-height:1.5;">
         ${escapeHtml(text)}
       </div>
     </div>
   `);
+}
+
+function updateNoticeText(text) {
+  const el = document.getElementById("pmNoticeText");
+  if (el) el.textContent = text;
+}
+
+function startCooldownCountdown(waitMs) {
+  if (cooldownTimer) clearInterval(cooldownTimer);
+
+  btnSolve.disabled = true;
+
+  const startedAt = nowMs();
+  const endAt = startedAt + waitMs;
+
+  const tick = () => {
+    const remaining = Math.max(0, endAt - nowMs());
+    const sec = Math.max(0, Math.ceil(remaining / 1000));
+    updateNoticeText(`Per evitare click ripetuti, riprova tra ${sec}s.`);
+
+    if (remaining <= 0) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+      btnSolve.disabled = false;
+
+      // se la notice è ancora quella del cooldown, la togliamo
+      // (se nel frattempo è arrivato altro contenuto, non tocchiamo)
+      const nt = document.getElementById("pmNoticeText");
+      if (nt && nt.textContent.includes("riprova tra")) {
+        answerBox.style.display = "none";
+        answerBox.innerHTML = "";
+      }
+    }
+  };
+
+  tick();
+  cooldownTimer = setInterval(tick, 200);
 }
 
 function getClientHistory() {
@@ -270,17 +303,17 @@ function renderFollowUp(data) {
       const display = prettifyOptionLabel(opt);
       return `
         <button
-          type="button"
-          data-opt="${escapeHtml(opt)}"
-          style="
-            border:1px solid #e2e8f0;
-            background:#ffffff;
-            border-radius:999px;
-            padding:10px 12px;
-            font-weight:900;
-            cursor:pointer;
-          "
-        >${escapeHtml(display)}</button>
+  type="button"
+  data-opt="${escapeHtml(opt)}"
+  style="
+    border:1px solid #e2e8f0;
+    background:#ffffff;
+    border-radius:999px;
+    padding:10px 12px;
+    font-weight:900;
+    cursor:pointer;
+  "
+>${escapeHtml(display)}</button>
       `;
     })
     .join("");
@@ -335,12 +368,8 @@ function renderFollowUp(data) {
 
     const check = canRequestNow();
     if (!check.ok) {
-      const sec = Math.max(1, Math.ceil(check.waitMs / 1000));
-      if (check.reason === "cooldown") {
-        showNiceNotice("Un attimo", `Per evitare abusi, puoi fare una nuova richiesta tra ${sec} secondi.`);
-      } else {
-        showNiceNotice("Limite temporaneo", `Hai fatto molte richieste. Riprova tra ${sec} secondi.`);
-      }
+      showNiceNotice("Un attimo", "Per evitare click ripetuti, riprova tra 1s.");
+      startCooldownCountdown(check.waitMs);
       return;
     }
 
@@ -354,11 +383,6 @@ function renderFollowUp(data) {
       const data2 = await callSolve({ text: merged, followup: true });
       renderSolution(data2);
     } catch (e) {
-      if (e.status === 429) {
-        const sec = e.serverWaitSec ? e.serverWaitSec : 20;
-        showNiceNotice("Troppa richiesta", `Riprova tra ${sec} secondi.`);
-        return;
-      }
       showNiceNotice("Qualcosa è andato storto", "Riprova tra poco. Se continua, cambia leggermente la richiesta.");
     } finally {
       btnSolve.disabled = false;
@@ -390,12 +414,8 @@ btnSolve.onclick = async () => {
 
   const check = canRequestNow();
   if (!check.ok) {
-    const sec = Math.max(1, Math.ceil(check.waitMs / 1000));
-    if (check.reason === "cooldown") {
-      showNiceNotice("Un attimo", `Per evitare abusi, puoi fare una nuova richiesta tra ${sec} secondi.`);
-    } else {
-      showNiceNotice("Limite temporaneo", `Hai fatto molte richieste. Riprova tra ${sec} secondi.`);
-    }
+    showNiceNotice("Un attimo", "Per evitare click ripetuti, riprova tra 1s.");
+    startCooldownCountdown(check.waitMs);
     return;
   }
 
@@ -415,11 +435,6 @@ btnSolve.onclick = async () => {
       renderSolution(data);
     }
   } catch (e) {
-    if (e.status === 429) {
-      const sec = e.serverWaitSec ? e.serverWaitSec : 20;
-      showNiceNotice("Troppa richiesta", `Riprova tra ${sec} secondi.`);
-      return;
-    }
     showNiceNotice("Qualcosa è andato storto", "Riprova tra poco. Se continua, cambia leggermente la richiesta.");
   } finally {
     btnSolve.disabled = false;
