@@ -1,223 +1,373 @@
 <!doctype html>
 <html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pulire Meglio</title>
-  <meta name="description" content="Come pulire qualsiasi cosa in modo sicuro e semplice. Descrivi il problema o carica una foto." />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pulire Meglio</title>
+    <meta
+      name="description"
+      content="Consigli pratici e sicuri per pulire casa, vestiti, esterni e auto."
+    />
 
-  <style>
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body { overflow-x: hidden; }
-  </style>
-</head>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
 
-<body style="
-  min-height:100vh;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  background:#f8fafc;
-  color:#0f172a;
-">
+        --brand: #0f766e;
+        --brandDark: #0b5f59;
+        --brandSoft: #e7f6f4;
 
-  <div style="
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 16px 80px;
-  ">
+        --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        --shadowSoft: 0 10px 22px rgba(15, 23, 42, 0.06);
+        --radius: 18px;
+      }
 
-    <header style="margin-bottom:32px;">
-      <h1 style="
-        font-size:42px;
-        margin:0 0 8px;
-        color:#0f766e;
-      ">
-        Pulire Meglio
-      </h1>
+      * {
+        box-sizing: border-box;
+      }
 
-      <p style="
-        margin:0;
-        font-size:16px;
-        color:#475569;
-        max-width:680px;
-      ">
-        Descrivi cosa devi pulire o carica una foto.
-        Ti diciamo <strong>come farlo in modo sicuro</strong>, senza rovinare nulla.
-      </p>
-    </header>
+      html,
+      body {
+        height: 100%;
+      }
 
-    <section style="
-      background:#ffffff;
-      border:1px solid #e2e8f0;
-      border-radius:16px;
-      padding:24px;
-      box-shadow:0 10px 25px rgba(15,23,42,0.06);
-      max-width:100%;
-    ">
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 20% 0%, #eef7ff 0%, var(--bg) 55%)
+          no-repeat;
+      }
 
-      <label for="q" style="
-        display:block;
-        font-weight:700;
-        margin-bottom:8px;
-        color:#0f172a;
-      ">
-        Cosa devi pulire
-      </label>
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 42px 18px 70px;
+      }
 
-      <textarea
-        id="q"
-        rows="4"
-        placeholder="Esempio: box doccia vetro, calcare vecchio. Oppure: divano tessuto, macchia di vino di ieri."
-        style="
-          width:100%;
-          max-width:100%;
-          padding:14px;
-          border-radius:10px;
-          border:1px solid #cbd5e1;
-          background:#ffffff;
-          color:#0f172a;
-          resize:vertical;
-          outline:none;
-          font-size:15px;
-        "
-      ></textarea>
+      .hero {
+        margin: 10px 0 26px;
+      }
 
-      <div style="
-        margin-top:10px;
-        padding:12px;
-        border-radius:12px;
-        border:1px solid #e2e8f0;
-        background:#f8fafc;
-        color:#475569;
-        font-size:14px;
-        line-height:1.45;
-        max-width:100%;
-        overflow-wrap:anywhere;
-      ">
-        Cerca di essere specifico: scrivi <strong>superficie + problema + da quanto tempo</strong>.
-        Se hai già provato qualcosa, dillo (es: “ho provato bicarbonato”).
-        <div style="margin-top:8px; color:#64748b;">
-          Esempi rapidi: “tappeto, macchia di caffè di stamattina” · “lavandino acciaio, aloni” · “forno, grasso bruciato”
+      .brandRow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--brand) 0%, #22c55e 140%);
+        box-shadow: var(--shadowSoft);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 44px;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+      }
+
+      .sub {
+        margin: 10px 0 0;
+        font-size: 18px;
+        color: var(--muted);
+        max-width: 62ch;
+        line-height: 1.5;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .cardHeader {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .cardTitle {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.35fr 0.65fr;
+        gap: 16px;
+      }
+
+      @media (max-width: 860px) {
+        h1 {
+          font-size: 36px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      label {
+        display: block;
+        font-weight: 800;
+        margin: 6px 0 10px;
+        font-size: 16px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 14px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        outline: none;
+        font-size: 16px;
+        line-height: 1.5;
+        background: #ffffff;
+        resize: vertical;
+      }
+
+      textarea:focus {
+        border-color: rgba(15, 118, 110, 0.45);
+        box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+      }
+
+      .help {
+        margin-top: 10px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .examples {
+        margin-top: 8px;
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.5;
+      }
+
+      .rightCol {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+        justify-content: flex-start;
+      }
+
+      .fileBox {
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: #ffffff;
+      }
+
+      .fileRow {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .fileMeta {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .btn {
+        width: 100%;
+        height: 52px;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        font-weight: 900;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--brand) 0%, #0ea5a4 140%);
+        box-shadow: 0 14px 28px rgba(15, 118, 110, 0.22);
+        transition: transform 0.08s ease, box-shadow 0.12s ease;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 36px rgba(15, 118, 110, 0.26);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .status {
+        min-height: 18px;
+        font-size: 14px;
+        color: var(--muted);
+        padding-left: 2px;
+      }
+
+      .answerWrap {
+        margin-top: 18px;
+      }
+
+      .answer {
+        display: none;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .answerHead {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .answerTitle {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+
+      .answerMeta {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .answerBody {
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      .footerNote {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #ffffff;
+        color: var(--text);
+        font-weight: 800;
+        font-size: 14px;
+      }
+
+      .pillDot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--brand);
+        opacity: 0.9;
+      }
+
+      .topHintRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="hero">
+        <div class="brandRow">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>Pulire meglio, senza rovinare nulla</h1>
+            <p class="sub">
+              Consigli pratici e sicuri per casa, vestiti, esterni e auto.
+            </p>
+          </div>
+        </div>
+
+        <div class="topHintRow" aria-hidden="true">
+          <span class="pill"><span class="pillDot"></span>Procedura chiara</span>
+          <span class="pill"><span class="pillDot"></span>Errori da evitare</span>
+          <span class="pill"><span class="pillDot"></span>Metodo prudente</span>
         </div>
       </div>
 
-      <div style="
-        display:flex;
-        gap:16px;
-        margin-top:20px;
-        flex-wrap:wrap;
-        align-items:flex-end;
-        max-width:100%;
-      ">
-
-        <div style="flex:1; min-width:240px; max-width:100%;">
-          <label for="img" style="
-            display:block;
-            font-weight:700;
-            margin-bottom:6px;
-          ">
-            Foto (opzionale)
-          </label>
-
-          <input
-            id="img"
-            type="file"
-            accept="image/*"
-            style="color:#475569; max-width:100%;"
-          />
-
-          <div id="imgMeta" style="
-            margin-top:6px;
-            font-size:14px;
-            color:#64748b;
-            max-width:100%;
-            overflow-wrap:anywhere;
-          "></div>
+      <div class="card">
+        <div class="cardHeader">
+          <div>
+            <div class="cardTitle">Dimmi cosa devi pulire</div>
+          </div>
         </div>
 
-        <div style="min-width:220px; max-width:100%;">
-          <button
-            id="btnSolve"
-            type="button"
-            style="
-              width:100%;
-              max-width:100%;
-              height:46px;
-              border-radius:12px;
-              border:none;
-              font-weight:800;
-              font-size:16px;
-              cursor:pointer;
-              background:#0f766e;
-              color:white;
-              box-shadow:0 6px 14px rgba(15,118,110,0.25);
-            "
-          >
-            Genera risposta
-          </button>
+        <div class="grid">
+          <div>
+            <label for="q">Cosa devi pulire</label>
+            <textarea
+              id="q"
+              placeholder="Es. macchia di vino sul tappeto"
+            ></textarea>
 
-          <div id="status" style="
-            margin-top:8px;
-            font-size:14px;
-            color:#64748b;
-            max-width:100%;
-            overflow-wrap:anywhere;
-          "></div>
+            <div class="help">
+              Scrivi cosa devi pulire e che problema c’è.
+              <div class="examples">
+                Esempi: macchia di caffè sul tappeto · aloni sul lavandino · grasso nel forno
+              </div>
+            </div>
+          </div>
+
+          <div class="rightCol">
+            <div class="fileBox">
+              <label for="img" style="margin: 0 0 8px">Foto (opzionale)</label>
+              <div class="fileRow">
+                <input id="img" type="file" accept="image/*" />
+                <div id="imgMeta" class="fileMeta"></div>
+              </div>
+            </div>
+
+            <button id="btnSolve" class="btn" type="button">Vai alla soluzione</button>
+            <div id="status" class="status"></div>
+          </div>
         </div>
-
       </div>
-    </section>
 
-    <section id="answer" style="display:none; margin-top:32px; max-width:100%;">
+      <div class="answerWrap">
+        <div id="answer" class="answer">
+          <div class="answerHead">
+            <h2 id="ansTitle" class="answerTitle"></h2>
+            <div id="ansMeta" class="answerMeta"></div>
+          </div>
+          <div id="ansBody" class="answerBody"></div>
 
-      <h2 id="ansTitle" style="
-        font-size:24px;
-        margin-bottom:6px;
-        color:#0f172a;
-        max-width:100%;
-        overflow-wrap:anywhere;
-      ">
-        Risposta
-      </h2>
+          <div class="footerNote">
+            Consiglio: prova sempre in un punto nascosto su superfici delicate.
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <div id="ansMeta" style="
-        font-size:14px;
-        color:#64748b;
-        margin-bottom:12px;
-        max-width:100%;
-        overflow-wrap:anywhere;
-      "></div>
-
-      <div id="ansBody" style="
-        background:#ffffff;
-        border:1px solid #e2e8f0;
-        border-radius:16px;
-        padding:24px;
-        box-shadow:0 10px 25px rgba(15,23,42,0.06);
-        line-height:1.55;
-        max-width:100%;
-        overflow:hidden;
-        overflow-wrap:anywhere;
-        word-break:break-word;
-      "></div>
-
-    </section>
-
-    <footer style="
-      margin-top:48px;
-      padding-top:16px;
-      border-top:1px solid #e2e8f0;
-      font-size:13px;
-      color:#64748b;
-      max-width:100%;
-      overflow-wrap:anywhere;
-    ">
-      Risposte generate con AI.
-      Testa sempre in un punto nascosto prima di applicare su superfici delicate.
-    </footer>
-
-  </div>
-
-  <script src="app.js"></script>
-</body>
+    <script src="./app.js"></script>
+  </body>
 </html>
