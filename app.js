@@ -87,13 +87,18 @@ function renderNotSupportedBox(data) {
       'Esempi: "forno incrostato", "calcare box doccia", "macchia sul divano".'
   );
 
+  // Fix overflow: max-width, box-sizing, e shadow più contenuta
   els.ansBody.innerHTML = `
     <div style="
+      width:100%;
+      max-width:100%;
+      box-sizing:border-box;
       padding:16px;
       border-radius:14px;
       border:1px solid #e2e8f0;
       background:#f0fdf4;
-      box-shadow:0 8px 18px rgba(15,23,42,0.06);
+      box-shadow:0 6px 14px rgba(15,23,42,0.06);
+      overflow:hidden;
     ">
       <div style="font-weight:800; color:#065f46; margin-bottom:8px;">
         Posso aiutarti a pulire, non a rispondere a domande generiche.
@@ -104,6 +109,9 @@ function renderNotSupportedBox(data) {
       </div>
 
       <div style="
+        width:100%;
+        max-width:100%;
+        box-sizing:border-box;
         padding:12px;
         border-radius:12px;
         background:#ffffff;
@@ -142,6 +150,8 @@ function renderClarification(data) {
 
       <textarea id="clarifyText" rows="3" style="
         width:100%;
+        max-width:100%;
+        box-sizing:border-box;
         padding:12px;
         border-radius:10px;
         border:1px solid #cbd5e1;
@@ -272,6 +282,9 @@ function renderAnswer(data) {
             border:1px solid #fecaca;
             border-radius:12px;
             background:#fff1f2;
+            max-width:100%;
+            box-sizing:border-box;
+            overflow:hidden;
           ">
             <b>Quando non farlo</b>
             ${toList(data.when_not_to_do, false)}
