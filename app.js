@@ -114,7 +114,7 @@ function startCooldownCountdown(waitMs) {
   const tick = () => {
     const remaining = Math.max(0, endAt - nowMs());
     const sec = Math.max(0, Math.ceil(remaining / 1000));
-    updateNoticeText(`Per evitare click ripetuti, riprova tra ${sec}s.`);
+    updateNoticeText(`Per evitare abusi, riprova tra ${sec}s.`);
 
     if (remaining <= 0) {
       clearInterval(cooldownTimer);
