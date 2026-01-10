@@ -62,13 +62,10 @@ function startCooldown(seconds) {
 
 function isNotSupportedResponse(data) {
   if (!data || typeof data !== "object") return false;
-
   const t = (data.title || "").toLowerCase();
   if (t.includes("richiesta non supportata")) return true;
-
   const s = (data.summary || "").toLowerCase();
   if (s.includes("solo a problemi di pulizia")) return true;
-
   return false;
 }
 
@@ -84,7 +81,7 @@ function renderNotSupportedBox(data) {
 
   const hint = escapeHtml(
     data.quick_alternative ||
-      'Esempi: "forno incrostato", "calcare box doccia", "macchia sul divano".'
+      'Esempi: "forno incrostato", "calcare box doccia", "macchia sul tappeto".'
   );
 
   els.ansBody.innerHTML = `
@@ -136,10 +133,7 @@ function renderClarification(data) {
       ? data.follow_up_questions[0]
       : "Puoi aggiungere un dettaglio in più?";
 
-  // Placeholder generico: sempre coerente
-  const genericPlaceholder = "Scrivi qui la tua risposta (una frase breve). Esempio: “macchia di caffè su cotone”";
-
-  // Hint coerente: riprende la domanda senza esempi specifici
+  const genericPlaceholder = "Scrivi qui la tua risposta (una frase breve).";
   const hintLine = `Rispondi alla domanda: “${escapeHtml(question)}”`;
 
   els.ansBody.innerHTML = `
@@ -211,9 +205,7 @@ function renderClarification(data) {
       question,
       "",
       "Nuove informazioni:",
-      extra,
-      "",
-      "Genera ora una soluzione completa e finale."
+      extra
     ].join("\n");
 
     try {
@@ -222,7 +214,8 @@ function renderClarification(data) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           text: context,
-          image_data_url: lastImageDataUrl
+          image_data_url: lastImageDataUrl,
+          followup: true
         })
       });
 
@@ -367,7 +360,11 @@ els.btnSolve.addEventListener("click", async () => {
     const res = await fetch("/api/solve", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text, image_data_url: lastImageDataUrl })
+      body: JSON.stringify({
+        text,
+        image_data_url: lastImageDataUrl,
+        followup: false
+      })
     });
 
     if (res.status === 429) {
