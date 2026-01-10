@@ -34,49 +34,54 @@ function showNiceLoadingCard(label = "Sto preparando la soluzione") {
       border:1px solid #e2e8f0;
       background:#ffffff;
       border-radius:18px;
-      padding:18px;
+      padding:20px;
       box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
     ">
-      <div style="display:flex; align-items:center; gap:12px;">
+      <div style="display:flex; align-items:center; gap:14px;">
+
+        <!-- Spugna -->
         <div style="
-          width:40px; height:40px;
-          border-radius:14px;
-          background: linear-gradient(135deg, #0f766e 0%, #22c55e 140%);
-          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
-        "></div>
+          width:46px;
+          height:30px;
+          border-radius:10px;
+          background:#22c55e;
+          position:relative;
+          overflow:hidden;
+        ">
+          <div class="pm-sponge"></div>
+        </div>
 
         <div style="flex:1;">
           <div style="font-weight:900; letter-spacing:-0.01em; font-size:16px;">
             ${escapeHtml(label)}
           </div>
           <div style="color:#64748b; font-size:14px; margin-top:2px;">
-            Un attimo, sto organizzando i passaggi in modo sicuro.
+            Sto pulendo le informazioni giuste per te.
           </div>
-        </div>
-
-        <div aria-hidden="true" style="display:flex; gap:6px; align-items:center;">
-          <span class="pm-dot"></span>
-          <span class="pm-dot"></span>
-          <span class="pm-dot"></span>
         </div>
       </div>
 
       <style>
-        .pm-dot{
-          width:8px;height:8px;border-radius:999px;background:#0f766e;opacity:.35;
-          animation: pmPulse 1s infinite ease-in-out;
+        .pm-sponge {
+          position:absolute;
+          top:0;
+          left:-30%;
+          width:40%;
+          height:100%;
+          background:rgba(255,255,255,0.45);
+          animation: pmClean 1.2s infinite ease-in-out;
         }
-        .pm-dot:nth-child(2){ animation-delay: .15s; }
-        .pm-dot:nth-child(3){ animation-delay: .3s; }
 
-        @keyframes pmPulse {
-          0%, 100% { transform: translateY(0); opacity: .35; }
-          50% { transform: translateY(-4px); opacity: .9; }
+        @keyframes pmClean {
+          0% { left:-40%; }
+          50% { left:50%; }
+          100% { left:120%; }
         }
       </style>
     </div>
   `);
 }
+
 
 async function callSolve({ text, followup }) {
   const res = await fetch("/api/solve", {
