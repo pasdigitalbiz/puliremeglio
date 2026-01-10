@@ -47,6 +47,16 @@ function checkRateLimit(ip) {
   return { ok: true, retryAfterMs: 0 };
 }
 
+function isFinalizationRequest(userText) {
+  const t = (userText || "").toLowerCase();
+  return (
+    t.includes("nuove informazioni") ||
+    t.includes("soluzione completa e finale") ||
+    t.includes("genera ora una soluzione completa") ||
+    t.includes("aggiorna la soluzione")
+  );
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).send("Method not allowed");
@@ -69,20 +79,31 @@ export default async function handler(req, res) {
 
   try {
     const { text, image_data_url } = req.body || {};
+    const userText = (text || "").trim();
+
+    const finalizationMode = isFinalizationRequest(userText);
 
     const inputParts = [
       {
         type: "input_text",
-        text:
-          "Sei un assistente esperto di pulizia domestica. " +
-          "Genera una risposta pratica e sicura. " +
-          "Evita combinazioni rischiose di prodotti. " +
-          "Se la superficie è delicata, proponi sempre un test in un angolo nascosto. " +
-          "Se mancano informazioni critiche, aggiungi domande finali."
+        text: [
+          "Sei un assistente esperto di pulizia domestica.",
+          "Genera una risposta pratica e sicura.",
+          "Evita combinazioni rischiose di prodotti.",
+          "Se la superficie è delicata, proponi sempre un test in un angolo nascosto.",
+          "",
+          "Regola di chiarezza:",
+          "Se mancano informazioni davvero critiche, fai al massimo UNA sola domanda di follow-up (una sola frase) e basta.",
+          "Non fare liste di domande.",
+          "",
+          "Regola di chiusura:",
+          "Se l'utente ha fornito nuove informazioni (follow-up), devi produrre una soluzione completa e finale.",
+          "In quel caso follow_up_questions deve essere un array vuoto.",
+          "Non chiedere altre domande nel secondo giro."
+        ].join("\n")
       }
     ];
 
-    const userText = (text || "").trim();
     if (userText) {
       inputParts.push({ type: "input_text", text: `Problema utente: ${userText}` });
     }
@@ -95,9 +116,11 @@ export default async function handler(req, res) {
       });
       inputParts.push({
         type: "input_text",
-        text:
-          "Analizza la foto per capire superficie e tipo di sporco. " +
-          "Se non sei sicuro, dichiaralo e proponi la procedura più prudente."
+        text: [
+          "Analizza la foto per capire superficie e tipo di sporco.",
+          "Se non sei sicuro, dichiaralo e proponi la procedura più prudente.",
+          "Applica la regola: al massimo UNA domanda di follow-up, solo se strettamente necessaria."
+        ].join("\n")
       });
     }
 
@@ -115,7 +138,11 @@ export default async function handler(req, res) {
         mistakes: { type: "array", items: { type: "string" } },
         when_not_to_do: { type: "array", items: { type: "string" } },
         quick_alternative: { type: "string" },
-        follow_up_questions: { type: "array", items: { type: "string" } }
+        follow_up_questions: {
+          type: "array",
+          maxItems: 1,
+          items: { type: "string" }
+        }
       },
       required: [
         "title",
@@ -151,6 +178,16 @@ export default async function handler(req, res) {
     if (!parsed) {
       res.status(500).send("Model returned non JSON output");
       return;
+    }
+
+    if (finalizationMode) {
+      if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
+      parsed.follow_up_questions = [];
+    } else {
+      if (!Array.isArray(parsed.follow_up_questions)) parsed.follow_up_questions = [];
+      if (parsed.follow_up_questions.length > 1) {
+        parsed.follow_up_questions = parsed.follow_up_questions.slice(0, 1);
+      }
     }
 
     res.status(200).json(parsed);
