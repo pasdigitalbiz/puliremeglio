@@ -64,7 +64,6 @@ function renderFollowUp(data) {
         <button
           type="button"
           data-opt="${escapeHtml(opt)}"
-          class="pm-opt"
           style="
             border:1px solid #e2e8f0;
             background:#ffffff;
@@ -79,9 +78,9 @@ function renderFollowUp(data) {
     .join("");
 
   showBox(`
-    <div class="answerHead" style="margin-bottom:12px;">
-      <h2 class="answerTitle" style="margin:0; font-size:28px; letter-spacing:-0.02em;">Mi serve solo una cosa</h2>
-      <div class="answerMeta" style="margin-top:6px; color:#64748b; font-size:14px;">
+    <div style="margin-bottom:12px;">
+      <h2 style="margin:0; font-size:28px; letter-spacing:-0.02em;">Mi serve solo una cosa</h2>
+      <div style="margin-top:6px; color:#64748b; font-size:14px;">
         Rispondi e ti do subito il metodo giusto.
       </div>
     </div>
@@ -193,56 +192,50 @@ function renderSolution(data) {
   const need = Array.isArray(data?.what_you_need) ? data.what_you_need : [];
   const quick = data?.quick_alternative ? escapeHtml(data.quick_alternative) : "";
 
-  const needHtml =
-    need.length
-      ? `<h3 style="margin-top:18px;">Cosa serve</h3><ul>${need
-          .map(x => `<li>${escapeHtml(x)}</li>`)
-          .join("")}</ul>`
-      : "";
+  const sectionTitle = (txt) => `<h3 style="margin-top:18px; margin-bottom:10px;">${txt}</h3>`;
 
-  const stepsHtml =
-    steps.length
-      ? `<h3 style="margin-top:18px;">Procedura</h3><ol>${steps
-          .map(x => `<li>${escapeHtml(x)}</li>`)
-          .join("")}</ol>`
-      : "";
+  const listUl = (arr) => `<ul style="margin:10px 0 0; padding-left:18px;">${arr
+    .map(x => `<li style="margin:6px 0;">${escapeHtml(x)}</li>`)
+    .join("")}</ul>`;
 
-  const mistakesHtml =
-    mistakes.length
-      ? `<h3 style="margin-top:18px;">Errori da evitare</h3><ul>${mistakes
-          .map(x => `<li>${escapeHtml(x)}</li>`)
-          .join("")}</ul>`
-      : "";
+  const listOl = (arr) => `<ol style="margin:10px 0 0; padding-left:18px;">${arr
+    .map(x => `<li style="margin:6px 0;">${escapeHtml(x)}</li>`)
+    .join("")}</ol>`;
 
-  const whenNotHtml =
-    whenNot.length
-      ? `<h3 style="margin-top:18px;">Quando non farlo</h3><ul>${whenNot
-          .map(x => `<li>${escapeHtml(x)}</li>`)
-          .join("")}</ul>`
-      : "";
+  const warningBox = (innerHtml) => `
+    <div style="
+      margin-top:10px;
+      border:1px solid #fecdd3;
+      background:#fff1f2;
+      border-radius:14px;
+      padding:14px;
+    ">
+      ${innerHtml}
+    </div>
+  `;
 
-  const quickHtml =
-    quick
-      ? `<h3 style="margin-top:18px;">Alternativa rapida</h3><p>${quick}</p>`
-      : "";
+  const needHtml = need.length ? `${sectionTitle("Cosa serve")}${listUl(need)}` : "";
+  const stepsHtml = steps.length ? `${sectionTitle("Procedura")}${listOl(steps)}` : "";
+
+  const mistakesHtml = mistakes.length
+    ? `${sectionTitle("Errori da evitare")}${warningBox(listUl(mistakes))}`
+    : "";
+
+  const whenNotHtml = whenNot.length
+    ? `${sectionTitle("Quando non farlo")}${warningBox(listUl(whenNot))}`
+    : "";
+
+  const quickHtml = quick
+    ? `${sectionTitle("Alternativa rapida")}<p style="margin:10px 0 0; line-height:1.65;">${quick}</p>`
+    : "";
 
   showBox(`
-    <div class="answerHead" style="margin-bottom:12px;">
-      <h2 class="answerTitle" style="margin:0; font-size:28px; letter-spacing:-0.02em;">${title}</h2>
-      ${
-        meta
-          ? `<div class="answerMeta" style="margin-top:6px; color:#64748b; font-size:14px;">${escapeHtml(
-              meta
-            )}</div>`
-          : ""
-      }
+    <div style="margin-bottom:12px;">
+      <h2 style="margin:0; font-size:28px; letter-spacing:-0.02em;">${title}</h2>
+      ${meta ? `<div style="margin-top:6px; color:#64748b; font-size:14px;">${escapeHtml(meta)}</div>` : ""}
     </div>
 
-    ${
-      summary
-        ? `<p style="font-size:16px; line-height:1.6; margin:0 0 8px;"><strong>${summary}</strong></p>`
-        : ""
-    }
+    ${summary ? `<p style="font-size:16px; line-height:1.6; margin:0 0 8px;"><strong>${summary}</strong></p>` : ""}
 
     <div style="font-size:16px; line-height:1.65;">
       ${needHtml}
