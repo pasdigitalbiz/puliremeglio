@@ -18,40 +18,53 @@
         --border: #e2e8f0;
 
         --brand: #0f766e;
-        --brandDark: #0b5f59;
-        --brandSoft: #e7f6f4;
-
         --ok: #16a34a;
-
         --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
         --shadowSoft: 0 10px 22px rgba(15, 23, 42, 0.06);
         --radius: 18px;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
         color: var(--text);
-        background: radial-gradient(1200px 600px at 20% 0%, #eef7ff 0%, var(--bg) 55%)
-          no-repeat;
+        background: radial-gradient(1200px 600px at 20% 0%, #eef7ff 0%, var(--bg) 55%) no-repeat;
       }
 
       .wrap {
         max-width: 980px;
         margin: 0 auto;
         padding: 42px 18px 70px;
+        position: relative;
       }
 
-      /* HERO */
-
-      .hero {
-        margin-bottom: 26px;
+      .betaBadge {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadowSoft);
+        font-weight: 900;
+        font-size: 13px;
+        color: var(--text);
       }
+
+      .betaDot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #f59e0b;
+      }
+
+      .hero { margin-bottom: 26px; }
 
       .brandRow {
         display: flex;
@@ -97,7 +110,7 @@
         border-radius: 999px;
         background: #ffffff;
         border: 1px solid var(--border);
-        font-weight: 700;
+        font-weight: 800;
         font-size: 14px;
         color: var(--text);
       }
@@ -107,8 +120,6 @@
         font-size: 16px;
         line-height: 1;
       }
-
-      /* CARD */
 
       .card {
         background: var(--card);
@@ -125,17 +136,14 @@
       }
 
       @media (max-width: 860px) {
-        h1 {
-          font-size: 34px;
-        }
-        .grid {
-          grid-template-columns: 1fr;
-        }
+        h1 { font-size: 34px; }
+        .grid { grid-template-columns: 1fr; }
+        .betaBadge { position: static; margin: 0 0 14px; }
       }
 
       label {
         display: block;
-        font-weight: 800;
+        font-weight: 900;
         margin: 6px 0 10px;
         font-size: 16px;
       }
@@ -196,8 +204,10 @@
         box-shadow: 0 14px 28px rgba(15, 118, 110, 0.22);
       }
 
-      .btn:hover {
-        box-shadow: 0 18px 36px rgba(15, 118, 110, 0.26);
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
       }
 
       .status {
@@ -215,19 +225,28 @@
         box-shadow: var(--shadow);
         padding: 20px;
       }
+
+      .footer {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
     </style>
   </head>
 
   <body>
     <div class="wrap">
+      <div class="betaBadge" title="Versione in miglioramento">
+        <span class="betaDot"></span> Beta
+      </div>
+
       <div class="hero">
         <div class="brandRow">
           <div class="logo"></div>
           <div>
             <h1>Come pulire nel modo giusto</h1>
-            <p class="sub">
-              Consigli pratici e sicuri per pulire senza fare danni.
-            </p>
+            <p class="sub">Consigli pratici e sicuri per pulire senza fare danni.</p>
           </div>
         </div>
 
@@ -242,10 +261,7 @@
         <div class="grid">
           <div>
             <label for="q">Cosa devi pulire</label>
-            <textarea
-              id="q"
-              placeholder="Es. macchia di vino sul tappeto"
-            ></textarea>
+            <textarea id="q" placeholder="Es. macchia di vino sul tappeto"></textarea>
 
             <div class="help">
               Scrivi cosa devi pulire e che problema c’è.
@@ -268,6 +284,10 @@
       </div>
 
       <div id="answer" class="answer"></div>
+
+      <div class="footer">
+        Versione beta: stiamo migliorando il servizio. Se qualcosa non torna, prova a riscrivere la richiesta in modo più semplice.
+      </div>
     </div>
 
     <script src="./app.js"></script>
