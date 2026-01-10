@@ -11,6 +11,8 @@ const els = {
 };
 
 let lastImageDataUrl = null;
+let cooldownTimer = null;
+let cooldownEndsAt = 0;
 
 function setStatus(msg) {
   els.status.textContent = msg || "";
@@ -30,6 +32,29 @@ function toList(arr, ordered) {
   const tag = ordered ? "ol" : "ul";
   const items = arr.map(x => `<li>${escapeHtml(x)}</li>`).join("");
   return `<${tag}>${items}</${tag}>`;
+}
+
+function startCooldown(seconds) {
+  const s = Math.max(1, Math.floor(seconds || 1));
+  cooldownEndsAt = Date.now() + s * 1000;
+
+  els.btnSolve.disabled = true;
+
+  if (cooldownTimer) clearInterval(cooldownTimer);
+  cooldownTimer = setInterval(() => {
+    const leftMs = cooldownEndsAt - Date.now();
+    const left = Math.max(0, Math.ceil(leftMs / 1000));
+
+    if (left <= 0) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+      els.btnSolve.disabled = false;
+      setStatus("");
+      return;
+    }
+
+    setStatus(`Limite richieste raggiunto. Riprova tra ${left}s.`);
+  }, 250);
 }
 
 function renderAnswer(data) {
@@ -115,6 +140,12 @@ els.btnSolve.addEventListener("click", async () => {
     return;
   }
 
+  if (cooldownEndsAt > Date.now()) {
+    const left = Math.max(1, Math.ceil((cooldownEndsAt - Date.now()) / 1000));
+    setStatus(`Riprova tra ${left}s.`);
+    return;
+  }
+
   els.btnSolve.disabled = true;
   setStatus("Genero la risposta...");
 
@@ -125,6 +156,22 @@ els.btnSolve.addEventListener("click", async () => {
       body: JSON.stringify({ text, image_data_url: lastImageDataUrl })
     });
 
+    if (res.status === 429) {
+      let seconds = 60;
+      try {
+        const payload = await res.json();
+        if (payload && typeof payload.retry_after_seconds === "number") {
+          seconds = payload.retry_after_seconds;
+        }
+      } catch {
+        const ra = res.headers.get("Retry-After");
+        if (ra) seconds = Number(ra) || seconds;
+      }
+
+      startCooldown(seconds);
+      return;
+    }
+
     if (!res.ok) {
       const errText = await res.text();
       throw new Error(errText || `HTTP ${res.status}`);
@@ -133,10 +180,12 @@ els.btnSolve.addEventListener("click", async () => {
     const data = await res.json();
     renderAnswer(data);
     setStatus("");
+
+    // micro cooldown per evitare spam click anche sotto soglia
+    startCooldown(8);
   } catch (e) {
     console.error(e);
     setStatus("Errore. Backend non raggiungibile o chiave API non configurata.");
-  } finally {
     els.btnSolve.disabled = false;
   }
 });
